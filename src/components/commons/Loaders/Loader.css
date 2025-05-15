@@ -1,0 +1,67 @@
+
+/* Default Loader Styles */
+.default-loader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed; /* Ensure it's fixed within the viewport */
+    top: 0;
+    left: 0;
+    width: 100vw; /* Full width of the viewport */
+    height: 100vh; /* Full height of the viewport */
+    background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent white */
+    backdrop-filter: blur(5px); /* Add a blur effect to the background */
+    z-index: 10000; /* Ensure it appears above other elements */
+  }
+
+  
+  .loader-container {
+    position: relative;
+    width: 80px;
+    height: 80px;
+  }
+  
+  .circle {
+    width: 100%;
+    height: 100%;
+    border: 4px solid transparent;
+    border-top-color: #2c3e50; /* Primary color */
+    border-radius: 50%;
+    animation: spin 1.2s linear infinite;
+  }
+  
+  .circle.shadow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 80%;
+    height: 80%;
+    margin: 10%;
+    border: 4px solid transparent;
+    border-top-color: #bdc3c7; /* Secondary color */
+    border-radius: 50%;
+    animation: spin-reverse 1.8s linear infinite;
+  }
+  
+  .loader-text {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    font-weight: 500;
+    color: #34495e;
+    text-align: center;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  @keyframes spin-reverse {
+    to {
+      transform: rotate(-360deg);
+    }
+  }

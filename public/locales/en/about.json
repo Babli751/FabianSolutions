@@ -1,0 +1,84 @@
+{
+  "AboutPageContent": {
+     "heroSection": {
+    "title": "About Us",
+    "description":"We craft high-performance digital experiences and modern websites that drive results."
+      },
+      "whoWeAreSection": {
+        "title": "Who We Are",
+        "description":"We're a team of forward-thinking developers and designers. We believe technology should serve people— that's why we build clean, modern, accessible web solutions that elevate businesses and ideas."
+      },
+      "OurValues": {
+        "title": "Our Core Values",
+        "value1":{
+            "title": "Innovation",
+            "description":"We stay ahead of trends and embrace change.",
+            "icon":"🚀"
+        },
+        "value2":{
+            "title": "Integrity",
+            "description":"We operate with honesty and full transparency.",
+            "icon":"🤝"
+        },
+        "value3":{
+            "title": "Excellence",
+            "description":"We strive for perfection in every pixel and line of code.",
+            "icon":"🎯"
+        }
+      },
+      "OurProcess": {
+        "title": "Our Process",
+        "description":"We work with a clear, strategic process that ensures quality and transparency at every stage.",
+        "steps":{
+          "step1":{
+            "stepTitle":"Discovery"
+          },
+          "step2":{
+            "stepTitle":"Design"
+          },
+          "step3":{
+            "stepTitle":"Development"
+          },
+          "step4":{
+            "stepTitle":"Deployment"
+          }
+        }
+      },
+      "TechnologiesSection":{
+          "title":"Technologies We Use",
+          "description":"We work with modern tools to build future-ready solutions"
+        },
+        "TeamSection":{
+          "title":"Meet Our Team",
+          "description":"A collective of specialists dedicated to digital excellence.",
+          "specialists":{
+              "specialist1": {
+                "name":"Rashad Naghiyev",
+                "role":"Creative Director",
+                "photo": "/assets/images/team/cv-photo.jpg",
+                "linkedin": "https://www.linkedin.com/in/rashad-naghiyev-73b181237/"
+              },
+              "specialist2": {
+                "name":"Cavansir Karimov",
+                "role":"Lead Developer",
+                "photo": "",
+                "linkedin": ""
+              },
+              "specialist3": {
+                "name":"Neman Osman",
+                "role":"UI/UX Designer",
+                "photo": "",
+                "linkedin": ""
+              }
+          }
+      },
+      "CallToAction":{
+        "title":"Ready to Work with Us?",
+        "description":"Let’s build something meaningful, together.",
+        "buttonText":"Contact Us"
+      }
+
+  }
+ 
+  }
+  

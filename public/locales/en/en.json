@@ -1,0 +1,216 @@
+{
+    "howItWorks": { 
+    "title": "How Does This Work?", 
+    "description": "Booking with us is simple! Follow these easy steps to secure your ride with us online.", 
+    "steps": { 
+      "step1": { 
+        "title": "Step 1: Choose Your Route & Date", 
+        "description": "Select your pickup and drop-off locations, then set your preferred date and time for the transfer." 
+      }, 
+      "step2": { 
+        "title": "Step 2: Choose Your Vehicle", 
+        "description": "Pick the car that best suits your needs from our available options." 
+      }, 
+      "step3": { 
+        "title": "Step 3: Complete Your Reservation", 
+        "description": "Complete your reservation securely through our website and receive instant confirmation." 
+      }
+    },
+    "cta": "Reserve Now"
+  },
+    "Sliders": {
+      "slider1": {
+        "src": "/assets/images/service/background-4.png",
+        "title": "Modern Web Development Services",
+        "text": "We build fast, scalable, and stunning websites tailored to your needs."
+      },
+      "slider2": {
+        "src": "/assets/images/service/background-3.jpg",
+        "title": "Mobile-First, Responsive Designs",
+        "text": "Your site will look perfect on any device, from phones to desktops."
+      },
+      "slider3": {
+        "src": "assets/images/service/background-2.jpg",
+        "title": "SEO & Performance Optimization",
+        "text": "Boost your online presence with our SEO and performance-focused builds."
+      },
+      "buttonText": "Explore Services"
+    },
+    "CommontContext": {
+      "ourServices": "Our Services",
+      "contactUs": "Contact Us",
+      "phone": "Phone",
+      "email": "Email",
+      "ourOffice": "Our Office",
+      "description": "Description",
+      "luggage_capacity": "Luggage Capacity",
+      "air_conditioner": "Air conditioner",
+      "get_info": "Get Info",
+      "quick_links": "Quick Links",
+      "follow_us": "Follow Us",
+      "all_rights_reserved": "All rights reserved.",
+      "First_Name": "First Name",
+      "Last_Name": "Last Name",
+      "Email": "Email",
+      "Phone": "Phone",
+      "ourBlogs": "Our Blogs",
+      "blogPageTitle":"Stay updated with the latest trends, tips, and insights from our team.",
+      "readMore":"Read more",
+      "WeCraftScalableFastAndModernWebsitesThatElevateYourBusinessPresence": "We craft scalable, fast, and modern websites that elevate your business presence.",
+      "ServiceCards": {
+          "service1": {
+            "title": "Web Development",
+            "description": "Custom websites and applications built with the latest tech stack."
+          },
+          "service2": {
+            "title": "Mobile Apps",
+            "description": "Cross-platform mobile apps that look and feel native."
+          },
+          "service3": {
+            "title": "UI/UX Design",
+            "description": "Stunning and user-friendly interfaces to boost engagement."
+          }
+      },
+      "AboutUS": {
+        "heroSection": {
+          "title": "Experience Luxury Travel with Us",
+          "content": "Discover unparalleled comfort, style, and luxury with our VIP transfer services. Whether for business or leisure, we offer tailored solutions for every traveler."
+        },
+        "storySection": {
+          "title": "Our Story",
+          "content": "Established with a passion for delivering premium travel experiences, we’ve been serving discerning travelers worldwide. Our mission is to redefine luxury transport with an emphasis on comfort, punctuality, and elegance."
+        },
+        "missionSection": {
+          "title": "Our Mission",
+          "content": "We aim to offer an unparalleled VIP transfer experience that exceeds expectations at every turn. From private airport transfers to customized sightseeing tours, we deliver a flawless journey every time."
+        },
+        "chooseUsSection": {
+          "title": "Why Choose Us?",
+          "content": "With years of expertise, a fleet of luxury vehicles, and impeccable service, we guarantee a safe, seamless, and comfortable travel experience, every time.",
+          "points": {
+              "point1": {
+                "title": "Luxury Fleet",
+                "content": "Travel in style with our exclusive fleet of luxury cars, including top-tier sedans, SUVs, and limousines."
+              },
+              "point2": {
+                "title": "Global Reach",
+                "content": "No matter where you are, our services are available in Turkey, offering seamless transfers across the country."
+              },
+              "point3": {
+                "title": "Personalized Service",
+                "content": "Our team is dedicated to tailoring every aspect of your journey to your needs, ensuring a comfortable and stress-free experience."
+              },
+              "point4": {
+                "title": "Unmatched Quality",
+                "content": "We pride ourselves on providing the highest standard of service, ensuring that your travel experience is nothing short of exceptional."
+              }
+          }
+        },
+        "testimonialSection": {
+          "title": "What Our Clients Say",
+          "content": "Hear from our delighted clients who have experienced the epitome of luxury travel. Their satisfaction is our top priority.",
+          "testimonials": {
+            "testimonial1": {
+              "text": "The best transfer experience I’ve ever had! Comfort, style, and flawless service every step of the way.",
+              "name": "Anna D."
+            },
+            "testimonial2": {
+              "text": "I was treated like royalty from start to finish. I wouldn’t trust anyone else with my travel needs.",
+              "name": "James R."
+            }
+          }
+        },
+        "CalltoActionSection": {
+          "title": "Ready for a Luxurious Journey?",
+          "content": "Book your VIP transfer now and experience the best in luxury travel.",
+          "buttonText": "Book Now"
+        }
+      },
+      "ServicesPage": {
+        "ReadyToBringYourProjectToLife": "Ready to bring your project to life?",
+        "heroSection": {
+          "title": "Our Services",
+          "content": "We offer tailored digital solutions to bring your ideas to life and help your business grow."
+        },
+        "servicesSection": {
+          "title": "Luxury Transfer Services",
+          "content": "Our VIP transfer services cater to all your transportation needs with a touch of exclusivity, professionalism, and comfort.",
+          "services": {
+                "service1": {
+                  "title": "Airport Transfers",
+                  "content": "Smooth, luxurious airport pickups & drop-offs with VIP treatment."
+                }, 
+                "service2": {
+                  "title": "Luxury Chauffeur",
+                  "content": "Personalized chauffeur-driven rides for maximum comfort."
+                }, 
+                "service3": {
+                  "title": "Hotel Transfers",
+                  "content": "Arrive at your hotel in style with our exclusive VIP rides."
+                }, 
+                "service4": {
+                  "title": "Luxury City Tours",
+                  "content": "Discover the city's most beautiful sights with our private city tours."
+                }, 
+                "service5": {
+                  "title": "VIP Concierge",
+                  "content": "Let us take care of all your travel arrangements and bookings."
+                }, 
+                "service6": {
+                  "title": "Hourly Car Rentals",
+                  "content": "Flexible and luxurious hourly rentals with professional drivers."
+                }
+          }
+        },
+        "WhyChooseUsSection": {
+          "title": "Why Choose Our VIP Transfer Services?",
+          "content": "We redefine luxury and professionalism with our first-class service, punctuality, and high-end vehicle selection.",
+          "points": {
+            "point1": {
+              "text": "Premium Vehicles",
+              "content": "Experience the finest luxury cars with top-tier comfort."
+            },
+            "point2": {
+              "text": "Safety First",
+              "content": "Certified, professional drivers ensure your safety."
+            },
+            "point3": {
+              "text": "Always On Time",
+              "content": "Punctual, efficient, and reliable service every time."
+            },
+            "point4": {
+              "text": "24/7 VIP Support",
+              "content": "Exclusive customer support available anytime."
+            }
+          }
+        },
+        "CallToAction": {
+          "text": "Ready for a VIP Experience?",
+          "buttonText": "Book Your VIP Transfer Now"
+        }
+      },
+      "Links": {
+        "Home": "Home",
+        "Services": "Services",
+        "About": "About Us",
+        "Blogs": "Blogs",
+        "Contact": "Contact",
+        "Help": "Help",
+        "Guide": "Guide",
+        "FAQ": "FAQ"
+      },
+      "Warnings": {
+        "PleaseSelectPickUpAdrress": "Please select pick up adrress.",
+        "PickUpTimeMustBeAtLeast6HoursFromNow": "Pick-up time must be at least 6 hours from now."
+      },
+      "Errors": {
+         "SorryNoContentFound":"Sorry, no content found",
+         "TheBlogPostRemoved":"The blog post you are looking for may not be available or may have been removed.",
+         "BackToBlogs": "Back to Blogs"
+      }
+    }
+
+    
+    
+  }
+  
