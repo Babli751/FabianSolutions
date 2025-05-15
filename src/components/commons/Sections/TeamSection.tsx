@@ -1,6 +1,7 @@
 // src/components/commons/Sections/TeamSection.tsx
 import { motion } from 'framer-motion';
 import { Team } from '@/types/commons';
+import Image from 'next/image';
 
 export default function TeamSection({ title, description, specialists }: Team) {
  
@@ -21,6 +22,7 @@ export default function TeamSection({ title, description, specialists }: Team) {
             {Object.entries(specialists)
              .sort(([a], [b]) => a.localeCompare(b))
              .map(([_, member], i) => {
+              console.log(_)
                 return (
                   <motion.div
                     key={member.name}
@@ -33,7 +35,7 @@ export default function TeamSection({ title, description, specialists }: Team) {
                     {/* Placeholder or profile image */}
                     <div className="w-24 h-24 rounded-full overflow-hidden mb-6 border-4 border-indigo-500 dark:border-indigo-400 shadow-md">
                       {member.photo ? (
-                        <img
+                        <Image
                           src={member.photo}
                           alt={member.name}
                           className="object-cover w-full h-full"

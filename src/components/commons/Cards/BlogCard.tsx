@@ -1,4 +1,4 @@
-// src/components/base/ServiceCard.tsx
+// src/components/commons/Cards/BlogCard.tsx
 "use client";
 import { useEffect, useState } from "react";
 import { fetchCommontContext } from "@/services/commonService";
@@ -6,9 +6,12 @@ import { usePathname } from "next/navigation";
 import { useNotification } from "@/context/NotificationContext";
 import NotificationModal from "../Modals/NotificationModal";
 import Link from "next/link";
-
+import { CommontContext } from "@/types/commons";
+import Loader from "../Loaders/Loader";
+import Image from "next/image";
 
 interface BlogCardProps {
+  id: number
   title: string;
   excerpt: string;
   image: string;
@@ -17,13 +20,14 @@ interface BlogCardProps {
 }
 
 export default function BlogCard({
+  id,
   title,
   excerpt,
   image,
   slug,
   locale,
 }: BlogCardProps) {
-    const [translations, setTranslations] = useState<any>(null);
+    const [translations, setTranslations] = useState<CommontContext | null>(null);
     const [loading, setLoading] = useState(true);
     const pathname = usePathname();
     const pathLocale = pathname.split("/")[1] || "en";
@@ -31,6 +35,7 @@ export default function BlogCard({
 
   useEffect(() => {
     const loadData = async () => {
+       setLoading(true);
       try {
         const [translationData] = await Promise.all([
           fetchCommontContext(pathLocale),
@@ -38,30 +43,40 @@ export default function BlogCard({
         setTranslations(translationData);
       } catch (error) {
         setNotification({message: 'Failed to fetch data.', type: "error" });
+         setLoading(false);
+         console.error(error)
       } finally {
         setLoading(false);
       }
     };
 
     loadData();
-  }, [pathLocale]);
+  }, [pathLocale, setNotification]);
 
     const handleClose = () => {
     closeNotification();
   };
 
-  console.log("Title:", title)
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader size="100" color="#FACC15" />
+      </div>
+    );
+  }
 
   return (
     <>
-    <article className="rounded-2xl overflow-hidden shadow-lg bg-white dark:bg-gray-900 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+    <article className="w-full sm:h-[400px] md:h-[450px] rounded-2xl overflow-hidden shadow-lg bg-white dark:bg-gray-900 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
       <Link href={`/${locale}/blogs/details/${slug}`}>
         <div className="relative group">
           {/* Image with border radius */}
-          <img
+          <Image
             src={image}
-            alt={title}
+            alt={title + "-" + id}
             className="w-full h-52 object-cover rounded-t-xl transition-transform duration-500 group-hover:scale-110"
+            width={500}
+            height={500}
             loading="lazy"
           />
           {/* Gradient overlay for a more modern feel */}

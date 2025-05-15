@@ -14,9 +14,11 @@ import OurProcessSection from "@/components/commons/Sections/OurProcessSection";
 import TechnologiesSection from "@/components/commons/Sections/TechnologiesSection";
 import TeamSection from "@/components/commons/Sections/TeamSection";
 import CallToActionSection from "@/components/commons/Sections/CallToActionSection";
+import { Translations } from "@/types/commons";
+
 
 export default function AboutPage() {
-  const [translations, setTranslations] = useState<any>(null);
+const [translations, setTranslations] = useState<Translations | null>(null);
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
   const pathLocale = pathname.split("/")[1] || "en";
@@ -24,20 +26,23 @@ export default function AboutPage() {
 
   useEffect(() => {
     const loadData = async () => {
+      setLoading(true);
       try {
         const [translationData] = await Promise.all([
           fetchAboutPageContent(pathLocale),
         ]);
         setTranslations(translationData);
       } catch (error) {
+        setLoading(false);
         setNotification({message: 'Failed to fetch data.', type: "error" });
+        console.error(error)
       } finally {
         setLoading(false);
       }
     };
 
     loadData();
-  }, [pathLocale]);
+  }, [pathLocale, setNotification]);
 
       const handleClose = () => {
     closeNotification();
@@ -68,10 +73,15 @@ export default function AboutPage() {
     />
 
       {/* Our Values */}
-      <OurValuesSection 
-      sectionTitle={translations?.OurValues.title || "Our Core Values"}
-      translations={translations}
+      {translations?.OurValues ? (
+      <OurValuesSection
+        sectionTitle={translations.OurValues.sectionTitle}
+        translations={translations.OurValues}
       />
+    ) : (
+      <p>Loading or no data</p>
+    )}
+
 
       {/* Our Process */}
       <OurProcessSection
@@ -94,7 +104,7 @@ export default function AboutPage() {
         <TeamSection 
         title={translations?.TeamSection?.title || "Meet Our Team"}
         description={translations?.TeamSection?.description || "A collective of specialists dedicated to digital excellence."}
-        specialists={translations?.TeamSection.specialists || {}}
+        specialists={translations?.TeamSection?.specialists || {}}
         />
 
       {/* Call to Action */}

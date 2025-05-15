@@ -13,6 +13,12 @@ interface Slide {
   text: string;
 }
 
+interface RawSlide {
+  src: string;
+  title: string;
+  text: string;
+}
+
 export default function Hero() {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [current, setCurrent] = useState(0);
@@ -34,23 +40,27 @@ export default function Hero() {
           ([key]) => key.startsWith("slider")
         );
 
-        const extractedSlides = sliderValues.map(([_, value]: any) => ({
-          src: value.src,
-          title: value.title,
-          text: value.text,
-        }));
+        const extractedSlides = sliderValues.map(([, value]) => {
+        const slide = value as RawSlide;
+        return {
+          src: slide.src,
+          title: slide.title,
+          text: slide.text,
+        };
+      });
 
         setSlides(extractedSlides);
         setButtonText(data.Sliders.buttonText || "Explore Services");
       } catch (error) {
         setNotification({ message: "Failed to load content.", type: "error" });
+        console.error(error)
       } finally {
         setLoading(false);
       }
     };
 
     loadSlides();
-  }, [pathLocale]);
+  }, [pathLocale, setLoading, setNotification]);
 
   useEffect(() => {
     const interval = setInterval(() => {

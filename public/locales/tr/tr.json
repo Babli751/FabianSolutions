@@ -1,23 +1,4 @@
 {
-    "howItWorks": { 
-      "title": "Nasıl Çalışır?", 
-      "description": "Bizimle rezervasyon yapmak çok basit! İşte online yolculuğunuzu güvence altına almak için takip etmeniz gereken adımlar.", 
-    "steps": { 
-        "step1": { 
-          "title": "Adım 1: Rota ve Tarih Seçin", 
-          "description": "Alış ve varış noktalarınızı seçin, ardından transfer için tercih ettiğiniz tarih ve saati belirleyin." 
-        }, 
-        "step2": { 
-          "title": "Adım 2: Aracınızı Seçin", 
-          "description": "İhtiyacınıza en uygun aracı mevcut seçeneklerimiz arasından seçin." 
-        }, 
-        "step3": { 
-          "title": "Adım 3: Rezervasyonunuzu Tamamlayın", 
-          "description": "Web sitemiz üzerinden güvenli bir şekilde rezervasyonunuzu tamamlayın ve anında onay alın." 
-        }
-      },
-      "cta": "Hemen Rezervasyon Yap"
-    },
     "Sliders": {
       "slider1": {
         "src": "/assets/images/service/background-4.png",
@@ -36,13 +17,6 @@
       },
       "buttonText": "Hizmetleri Keşfet"
     },
-
-      "HowCanIMakeReservation": {
-        "reservationTitle": "Rezervasyonu nasıl yapabilirim?",
-        "reservationDescription1": "Rezervasyon yapmak hızlı ve kolaydır! İstediğiniz lokasyonu seçin, tercih ettiğiniz tarih ve saati belirleyin ve sadece birkaç tıklama ile rezervasyonunuzu onaylayın. Sizin için sorunsuz bir deneyim sunuyoruz, böylece yolculuğunuz zahmetsiz olur!",
-        "reservationDescription2": "Platformumuz, rezervasyonunuzu zahmetsizce yönetebilmeniz için tasarlanmıştır. Artık beklemeye gerek yok, parmaklarınızın ucunda hızlı ve verimli hizmet."
-      },
-
       "CommontContext": {
         "ourServices": "Hizmetlerimiz",
         "contactUs": "Bize Ulaşın",
@@ -60,8 +34,10 @@
         "Email": "E-posta",
         "Phone": "Telefon",
         "ourBlogs": "Bloglarımız",
-        "blogPageTitle":"Ekibimizin en son trendleri, ipuçları ve içgörüleriyle güncel kalın.",
+        "blogSubtitle":"Ekibimizin en son trendleri, ipuçları ve içgörüleriyle güncel kalın.",
         "readMore":"Daha fazlasını oku",
+        "FeaturedProjects":"Öne Çıkan Projeler",
+        "LatestBlogPosts":"Son Blog Yazıları",
         "WeCraftScalableFastAndModernWebsitesThatElevateYourBusinessPresence": "İşletmenizin görünürlüğünü artıracak ölçeklenebilir, hızlı ve modern web siteleri tasarlıyoruz.",
         "ServiceCards": {
           "service1": {
@@ -75,127 +51,41 @@
           "service3": {
             "title": "UI/UX Tasarımı",
             "description": "Etkileşimi artırmak için çarpıcı ve kullanıcı dostu arayüzler."
+          },
+          "service4": {
+            "title": "SMM (Sosyal Medya Pazarlaması)",
+            "description": "Sosyal medya platformları için özel stratejilerle markanızı büyütün."
+          },
+          "service5": {
+            "title": "SEO Optimizasyonu",
+            "description": "Arama motoru sıralamanızı iyileştirin ve organik trafiği artırın."
+          },
+          "service6": {
+            "title": "API Geliştirme",
+            "description": "Üçüncü taraf hizmetlerle sorunsuz entegrasyon için güvenli ve ölçeklenebilir API'ler."
+          },
+          "service7": {
+            "title": "E-ticaret Çözümleri",
+            "description": "Performans ve ölçeklenebilirlik için oluşturulmuş özel e-ticaret platformları."
+          },
+          "service8": {
+            "title": "Bakım ve Destek",
+            "description": "Projeleriniz için sürekli destek, güncellemeler ve performans izleme."
+          },
+          "service9": {
+            "title": "Markalaşma ve Kimlik",
+            "description": "Vizyonunuza göre uyarlanmış logo tasarımı, görsel kimlik ve marka yönergeleri."
           }
       },
-        "AboutUS": {
-          "heroSection": {
-            "title": "Bizimle Lüks Seyahati Deneyimleyin",
-            "content": "VIP transfer hizmetlerimizle benzersiz konfor, stil ve lüksü keşfedin. İş veya tatil amaçlı seyahat eden herkes için özel çözümler sunuyoruz."
-          },
-          "storySection": {
-            "title": "Hikayemiz",
-            "content": "Üst düzey seyahat deneyimleri sunma tutkusuyla kurulan şirketimiz, dünyanın dört bir yanındaki seçkin yolculara hizmet vermektedir. Misyonumuz, konfor, dakiklik ve zarafete odaklanarak lüks ulaşımı yeniden tanımlamaktır."
-          },
-          "missionSection": {
-            "title": "Misyonumuz",
-            "content": "Beklentilerin ötesinde bir VIP transfer deneyimi sunmayı hedefliyoruz. Özel havaalanı transferlerinden kişiselleştirilmiş şehir turlarına kadar her yolculuğunuzu kusursuz hale getiriyoruz."
-          },
-          "chooseUsSection": {
-            "title": "Neden Bizi Seçmelisiniz?",
-            "content": "Yılların deneyimi, lüks araç filomuz ve kusursuz hizmetimizle, her zaman güvenli, konforlu ve sorunsuz bir seyahat deneyimi garanti ediyoruz.",
-            "points": {
-              "point1": {
-                "title": "Lüks Araç Filosu",
-                "content": "Özel filomuzda üst segment sedanlar, SUV'ler ve limuzinler ile şık bir şekilde seyahat edin."
-              },
-              "point2": {
-                "title": "Küresel Erişim",
-                "content": "Nerede olursanız olun, hizmetlerimiz Türkiye genelinde mevcuttur ve sorunsuz transferler sunmaktadır."
-              },
-              "point3": {
-                "title": "Kişiselleştirilmiş Hizmet",
-                "content": "Ekibimiz, seyahatinizin her ayrıntısını ihtiyaçlarınıza göre uyarlayarak konforlu ve stressiz bir deneyim sunar."
-              },
-              "point4": {
-                "title": "Eşsiz Kalite",
-                "content": "Seyahat deneyiminizin olağanüstü olması için en yüksek hizmet standartlarını sağlıyoruz."
-              }
-            }
-          },
-          "testimonialSection": {
-            "title": "Müşterilerimiz Ne Diyor?",
-            "content": "Lüks seyahatin zirvesini deneyimleyen mutlu müşterilerimizin yorumlarını okuyun. Memnuniyetleri bizim için en büyük önceliktir.",
-            "testimonials": {
-              "testimonial1": {
-                "text": "Hayatımın en iyi transfer deneyimi! Her aşamada konfor, şıklık ve kusursuz hizmet.",
-                "name": "Anna D."
-              },
-              "testimonial2": {
-                "text": "Baştan sona kadar kraliyet ailesi gibi ağırlandım. Seyahatlerimde başka kimseye güvenmem.",
-                "name": "James R."
-              }
-            }
-          },
-          "CalltoActionSection": {
-            "title": "Lüks Bir Yolculuğa Hazır mısınız?",
-            "content": "VIP transferinizi şimdi rezerve edin ve lüks seyahatin en iyisini deneyimleyin.",
-            "buttonText": "Şimdi Rezervasyon Yap"
-          }
-        },
         "ServicesPage": {
           "ReadyToBringYourProjectToLife": "Projenizi hayata geçirmeye hazır mısınız?",
           "heroSection": {
             "title": "Hizmetlerimiz",
             "content": "Fikirlerinizi hayata geçirmek ve işinizin büyümesine yardımcı olmak için özel dijital çözümler sunuyoruz."
-          },
-          "servicesSection": {
-            "title": "Lüks Transfer Hizmetleri",
-            "content": "VIP transfer hizmetlerimiz, tüm ulaşım ihtiyaçlarınızı ayrıcalık, profesyonellik ve konfor ile karşılar.",
-            "services": {
-              "service1": {
-                "title": "Havaalanı Transferleri",
-                "content": "VIP hizmet ile sorunsuz, lüks havaalanı karşılama ve bırakma."
-              },
-              "service2": {
-                "title": "Lüks Şoförlü Araç",
-                "content": "Maksimum konfor için kişiselleştirilmiş şoförlü yolculuklar."
-              },
-              "service3": {
-                "title": "Otel Transferleri",
-                "content": "Özel VIP araçlarımız ile otelinize şık bir şekilde ulaşın."
-              },
-              "service4": {
-                "title": "Lüks Şehir Turları",
-                "content": "Özel şehir turlarımız ile şehrin en güzel manzaralarını keşfedin."
-              },
-              "service5": {
-                "title": "VIP Concierge",
-                "content": "Tüm seyahat düzenlemelerinizi ve rezervasyonlarınızı biz yapalım."
-              },
-              "service6": {
-                "title": "Saatlik Araç Kiralama",
-                "content": "Profesyonel şoförler ile esnek ve lüks saatlik kiralama hizmeti."
-              }
-            }
-          },
-          "WhyChooseUsSection": {
-            "title": "Neden VIP Transfer Hizmetimizi Seçmelisiniz?",
-            "content": "Birinci sınıf hizmet, dakiklik ve yüksek kaliteli araç seçeneklerimiz ile lüksü ve profesyonelliği yeniden tanımlıyoruz.",
-            "points": {
-              "point1": {
-                "text": "Premium Araçlar",
-                "content": "Üst düzey konfora sahip en lüks araçları deneyimleyin."
-              },
-              "point2": {
-                "text": "Önce Güvenlik",
-                "content": "Sertifikalı, profesyonel şoförler güvenliğinizi sağlar."
-              },
-              "point3": {
-                "text": "Her Zaman Zamanında",
-                "content": "Dakik, verimli ve güvenilir hizmet her zaman."
-              },
-              "point4": {
-                "text": "7/24 VIP Destek",
-                "content": "Her zaman erişilebilir özel müşteri desteği."
-              }
-            }
-          },
-          "CallToAction": {
-            "text": "VIP Deneyime Hazır mısınız?",
-            "buttonText": "VIP Transferinizi Şimdi Rezerve Edin"
           }
         },
         "Links": {
+          "QuickLinks": "Hızlı Bağlantılar",
           "Home": "Ev",
           "Services": "Hizmetler",
           "About": "Hakkımızda",
@@ -205,10 +95,6 @@
           "Guide": "Rehber",
           "FAQ": "SSS"
         },
-          "Warnings": {
-            "PleaseSelectPickUpAdrress": "Lütfen alım adresini seçin.",
-            "PickUpTimeMustBeAtLeast6HoursFromNow": "Alım saati şu andan itibaren en az 6 saat sonra olmalıdır."
-          },
         "Errors": {
           "SorryNoContentFound":"Üzgünüz, içerik bulunamadı",
           "TheBlogPostRemoved":"Aradığınız blog yazısı mevcut olmayabilir veya kaldırılmış olabilir.",

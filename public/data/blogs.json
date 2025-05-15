@@ -2,98 +2,167 @@
 "Blogs": {
     "blog1": {
         "id": 1,
-        "slug": "Test-Blog-1",
-        "cover": "/assets/images/blogs/istanbul.jpg",
+        "slug": "future-of-frontend",
+        "cover": "/assets/images/blogs/frontend_dev_blog.jpg",
         "published_at": "2024-07-01",
-        "content": "<p>This is some HTML content for the blog.</p>",
+        "content": "<p>The world of frontend development is undergoing a major transformation. With the rise of JavaScript frameworks like React, Vue.js, and Svelte, developers are building faster, more dynamic user interfaces than ever before. Progressive Web Apps (PWAs) are blurring the lines between web and mobile, offering offline capabilities, push notifications, and smooth performance. Meanwhile, tools like Tailwind CSS and component-based UI libraries are making styling more efficient and maintainable. Accessibility, responsiveness, and performance are now core priorities in frontend workflows. In short, the future of frontend is not just about building interfaces—it’s about creating seamless, scalable digital experiences.</p>",
         "translations": {
             "en": {
-            "title": "Test Blog EN",
-            "excerpt": "test",
-            "description": "English description. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+            "title": "The Future of Frontend Development",
+            "excerpt": "Explore the latest trends shaping modern frontend development.",
+            "description": "Frontend development is more dynamic than ever. Learn about the tools and trends that are reshaping the way we build for the web.",
+            "content": "<p>The world of frontend development is undergoing a major transformation. With the rise of JavaScript frameworks like React, Vue.js, and Svelte, developers are building faster, more dynamic user interfaces than ever before. Progressive Web Apps (PWAs) are blurring the lines between web and mobile, offering offline capabilities, push notifications, and smooth performance. Meanwhile, tools like Tailwind CSS and component-based UI libraries are making styling more efficient and maintainable. Accessibility, responsiveness, and performance are now core priorities in frontend workflows. In short, the future of frontend is not just about building interfaces—it’s about creating seamless, scalable digital experiences.</p>"
             },
             "tr": {
-            "title": "Test Blog TR",
-            "excerpt": "test",
-            "description": "Türkçe açıklama. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+            "title": "Frontend Geliştirmenin Geleceği",
+            "excerpt": "Modern frontend geliştirme trendlerini keşfedin.",
+            "description": "Frontend geliştirme hiç olmadığı kadar dinamik. Web için geliştirme yöntemlerini dönüştüren araçları ve trendleri öğrenin.",
+            "content": "<p>Frontend geliştirme dünyası büyük bir dönüşüm geçiriyor. React, Vue.js ve Svelte gibi JavaScript framework'lerinin yükselişiyle, geliştiriciler daha hızlı ve dinamik kullanıcı arayüzleri oluşturuyor. Progressive Web Apps (PWAs), web ve mobil arasındaki çizgiyi bulanıklaştırarak çevrimdışı çalışma, bildirim gönderme ve yüksek performans gibi özellikler sunuyor. Tailwind CSS ve bileşen tabanlı UI kütüphaneleri gibi araçlar, stil vermeyi daha verimli ve sürdürülebilir hale getiriyor. Erişilebilirlik, duyarlılık ve performans artık frontend iş akışlarının temel öncelikleri arasında. Kısacası, frontend'in geleceği sadece arayüz tasarlamakla kalmıyor; aynı zamanda kesintisiz ve ölçeklenebilir dijital deneyimler yaratmakla ilgili.</p>"
             },
             "ru": {
-            "title": "Test Blog RU",
-            "excerpt": "test",
-            "description": "Türkçe açıklama. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+            "title": "Будущее Frontend-разработки",
+            "excerpt": "Узнайте о новых тенденциях в frontend-разработке.",
+            "description": "Frontend-разработка становится всё более динамичной. Ознакомьтесь с инструментами и трендами, которые меняют подход к созданию веб-интерфейсов.",
+            "content": "<p>Мир frontend-разработки переживает серьёзные изменения. С появлением JavaScript-фреймворков, таких как React, Vue.js и Svelte, разработчики создают более быстрые и динамичные пользовательские интерфейсы. Прогрессивные веб-приложения (PWA) стирают границы между вебом и мобильными устройствами, предоставляя возможность работы оффлайн, отправки уведомлений и высокую производительность. Инструменты вроде Tailwind CSS и компонентных библиотек делают стилизацию более эффективной. Доступность, отзывчивость и производительность становятся ключевыми приоритетами. Будущее frontend'а — это не просто интерфейсы, а создание масштабируемых цифровых решений.</p>"
             }
         }
     },
-     "blog2": {
-        "id": 2,
-        "slug": "Test-Blog-2",
-        "cover": "/assets/images/blogs/istanbul.jpg",
-        "translations": {
-            "en": {
-            "title": "Test Blog EN",
-            "excerpt": "test",
-            "description": "English description"
-            },
-            "tr": {
-            "title": "Test Blog TR",
-            "excerpt": "test",
-            "description": "Türkçe açıklama"
-            },
-            "ru": {
-            "title": "Test Blog RU",
-            "excerpt": "test",
-            "description": "Türkçe açıklama. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
-            }
-        }
-    },
-     "blog3": {
-        "id": 3,
-        "slug": "Test-Blog-3",
-        "cover": "/assets/images/blogs/istanbul.jpg",
-        "published_at": "2024-07-01",
-        "content": "<p>This is some HTML content for the blog.</p>",
-        "translations": {
-            "en": {
-            "title": "Test Blog EN",
-            "excerpt": "test",
-            "description": "English description"
-            },
-            "tr": {
-            "title": "Test Blog TR",
-            "excerpt": "test",
-            "description": "Türkçe açıklama"
-            },
-            "ru": {
-            "title": "Test Blog RU",
-            "excerpt": "test",
-            "description": "Türkçe açıklama. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
-            }
-        }
-    },
-     "blog4": {
-        "id": 4,
-        "slug": "Test-Blog-4",
-        "cover": "/assets/images/blogs/istanbul.jpg",
-        "published_at": "2024-07-01",
-        "content": "<p>This is some HTML content for the blog.</p>",
-        "translations": {
-            "en": {
-            "title": "Test Blog EN",
-            "excerpt": "test",
-            "description": "English description"
-            },
-            "tr": {
-            "title": "Test Blog TR",
-            "excerpt": "test",
-            "description": "Türkçe açıklama"
-            },
-            "ru": {
-            "title": "Test Blog RU",
-            "excerpt": "test",
-            "description": "Türkçe açıklama. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
-            }
+    "blog2": {
+    "id": 2,
+    "slug": "backend-frameworks-2024",
+    "cover": "/assets/images/blogs/backend-frameworks.png",
+    "published_at": "2024-07-13",
+    "content": "<p>As the web becomes more complex, choosing the right backend framework is more crucial than ever. In 2024, the landscape is rich with options—each with its own strengths. Node.js remains a popular choice for real-time applications and JavaScript-heavy stacks. Django (Python) is favored for rapid development and clean architecture. Laravel (PHP) continues to be loved for its elegant syntax and rich ecosystem. FastAPI is gaining momentum due to its speed and automatic documentation support. When selecting a backend, factors like team skill, scalability, community, and project type should guide your decision. The right backend isn’t just about performance—it’s about productivity and long-term maintainability.</p>",
+    "translations": {
+        "en": {
+        "title": "Choosing the Right Backend Framework in 2024",
+        "excerpt": "Explore the top backend frameworks and how to pick the best one for your project.",
+        "description": "Node.js, Django, Laravel, or FastAPI? Find out which backend framework fits your project needs in 2024.",
+        "content": "<p>As the web becomes more complex, choosing the right backend framework is more crucial than ever. In 2024, the landscape is rich with options—each with its own strengths. Node.js remains a popular choice for real-time applications and JavaScript-heavy stacks. Django (Python) is favored for rapid development and clean architecture. Laravel (PHP) continues to be loved for its elegant syntax and rich ecosystem. FastAPI is gaining momentum due to its speed and automatic documentation support. When selecting a backend, factors like team skill, scalability, community, and project type should guide your decision. The right backend isn’t just about performance—it’s about productivity and long-term maintainability.</p>"
+        },
+        "tr": {
+        "title": "2024'te Doğru Backend Framework'ünü Seçmek",
+        "excerpt": "En iyi backend framework’lerini ve projenize en uygun olanı öğrenin.",
+        "description": "Node.js, Django, Laravel veya FastAPI? 2024 yılında projenize en uygun backend framework’ünü seçin.",
+        "content": "<p>Web dünyası karmaşıklaştıkça, doğru backend framework’ünü seçmek her zamankinden daha önemli hale geliyor. 2024'te seçenekler oldukça geniş. Node.js, gerçek zamanlı uygulamalar ve JavaScript ağırlıklı projeler için popülerliğini koruyor. Django (Python), hızlı geliştirme ve temiz mimarisi ile öne çıkıyor. Laravel (PHP), zarif sözdizimi ve zengin ekosistemi ile seviliyor. FastAPI ise hızı ve otomatik dokümantasyon desteği sayesinde ivme kazanıyor. Seçim yaparken ekip becerisi, ölçeklenebilirlik, topluluk desteği ve proje türü gibi faktörleri göz önünde bulundurmalısınız. Doğru backend framework'ü sadece performans değil; verimlilik ve uzun vadeli sürdürülebilirlik demektir.</p>"
+        },
+        "ru": {
+        "title": "Выбор подходящего Backend-фреймворка в 2024 году",
+        "excerpt": "Узнайте, какой backend-фреймворк подойдёт вашему проекту лучше всего.",
+        "description": "Node.js, Django, Laravel или FastAPI? Подберите фреймворк, который лучше всего подходит под нужды вашего проекта в 2024 году.",
+        "content": "<p>По мере усложнения веб-разработки выбор backend-фреймворка становится всё более важным. В 2024 году существует множество отличных вариантов. Node.js популярен для приложений в реальном времени и JavaScript-стека. Django (Python) славится быстрой разработкой и чистой архитектурой. Laravel (PHP) ценится за элегантный синтаксис и богатую экосистему. FastAPI набирает популярность благодаря высокой скорости и поддержке автоматической документации. При выборе следует учитывать навыки команды, масштабируемость, активность сообщества и тип проекта. Подходящий backend — это не только производительность, но и удобство разработки и долгосрочная поддержка.</p>"
         }
     }
+    },
+    "blog3": {
+            "id": 3,
+            "slug": "ai-in-web-development",
+            "cover": "/assets/images/blogs/ai-in-web-development.jpg",
+            "published_at": "2024-07-14",
+            "content": "<p>Artificial Intelligence is reshaping the way we build websites and web applications. From AI-powered code assistants like GitHub Copilot to intelligent chatbots and content generators, developers now have tools that enhance productivity and creativity. Web design is also evolving—AI can now suggest layouts, optimize user experience, and even personalize content for visitors in real time. AI-driven analytics help developers understand user behavior and make data-informed decisions faster. As AI models become more accessible, we’re entering an era where automation and smart features are no longer a luxury—they’re a baseline expectation for modern digital products.</p>",
+            "translations": {
+                "en": {
+                "title": "How AI is Transforming Web Development",
+                "excerpt": "Discover how AI tools are changing the future of websites and web apps.",
+                "description": "Explore the impact of AI on design, development, and user experience in modern web applications.",
+                "content": "<p>Artificial Intelligence is reshaping the way we build websites and web applications. From AI-powered code assistants like GitHub Copilot to intelligent chatbots and content generators, developers now have tools that enhance productivity and creativity. Web design is also evolving—AI can now suggest layouts, optimize user experience, and even personalize content for visitors in real time. AI-driven analytics help developers understand user behavior and make data-informed decisions faster. As AI models become more accessible, we’re entering an era where automation and smart features are no longer a luxury—they’re a baseline expectation for modern digital products.</p>"
+                },
+                "tr": {
+                "title": "Yapay Zekâ Web Geliştirmeyi Nasıl Dönüştürüyor?",
+                "excerpt": "Yapay zekâ araçlarının web geliştirmeye etkisini keşfedin.",
+                "description": "Modern web uygulamalarında yapay zekânın tasarım, geliştirme ve kullanıcı deneyimine etkisini inceleyin.",
+                "content": "<p>Yapay zekâ, web siteleri ve uygulamaların nasıl geliştirildiğini kökten değiştiriyor. GitHub Copilot gibi AI destekli kod asistanlarından, akıllı sohbet botlarına ve içerik üreticilere kadar geliştiricilerin üretkenliğini artıran birçok araç ortaya çıktı. Web tasarımı da dönüşüyor—yapay zekâ artık yerleşim önerileri sunabiliyor, kullanıcı deneyimini optimize ediyor ve içerikleri ziyaretçilere özel hale getirebiliyor. AI destekli analizler, kullanıcı davranışlarını anlamayı ve daha hızlı kararlar almayı mümkün kılıyor. Yapay zekâ modellerinin erişilebilirliği arttıkça, akıllı özellikler artık lüks değil, modern dijital ürünler için temel bir gereksinim haline geliyor.</p>"
+                },
+                "ru": {
+                "title": "Как ИИ трансформирует веб-разработку",
+                "excerpt": "Узнайте, как искусственный интеллект меняет веб-разработку.",
+                "description": "Откройте для себя влияние ИИ на разработку, дизайн и пользовательский опыт в современных веб-приложениях.",
+                "content": "<p>Искусственный интеллект меняет подход к созданию сайтов и веб-приложений. От помощников по написанию кода, таких как GitHub Copilot, до умных чат-ботов и генераторов контента — у разработчиков появились инструменты, которые повышают продуктивность и креативность. Дизайн веба также развивается — ИИ предлагает макеты, оптимизирует пользовательский опыт и персонализирует контент в реальном времени. Аналитика, основанная на ИИ, помогает быстрее понимать поведение пользователей и принимать решения на основе данных. С ростом доступности ИИ-моделей, умные функции становятся не роскошью, а стандартом для современных цифровых продуктов.</p>"
+                }
+            }
+        },
+        "blog4": {
+            "id": 4,
+            "slug": "web-security-best-practices",
+            "cover": "/assets/images/blogs/security.jpg",
+            "published_at": "2024-07-15",
+            "content": "<p>Web security is no longer optional—it's essential. In an age where cyberattacks are increasingly common, developers must prioritize security from the start. Key practices include enforcing HTTPS, protecting against SQL injection, implementing proper authentication and session management, and validating all user input. Content Security Policy (CSP), secure cookies, and rate limiting are additional layers that help harden your applications. Regularly updating dependencies and performing vulnerability scans should also be part of your development lifecycle. Remember, the earlier you embed security, the stronger and more reliable your application becomes.</p>",
+            "translations": {
+                "en": {
+                "title": "Web Security Best Practices Every Developer Should Know",
+                "excerpt": "Protect your web apps with these essential security techniques.",
+                "description": "Learn how to secure your websites against modern threats with proven web security best practices.",
+                "content": "<p>Web security is no longer optional—it's essential. In an age where cyberattacks are increasingly common, developers must prioritize security from the start. Key practices include enforcing HTTPS, protecting against SQL injection, implementing proper authentication and session management, and validating all user input. Content Security Policy (CSP), secure cookies, and rate limiting are additional layers that help harden your applications. Regularly updating dependencies and performing vulnerability scans should also be part of your development lifecycle. Remember, the earlier you embed security, the stronger and more reliable your application becomes.</p>"
+                },
+                "tr": {
+                "title": "Her Geliştiricinin Bilmesi Gereken Web Güvenlik Uygulamaları",
+                "excerpt": "Web uygulamalarınızı korumak için bu güvenlik tekniklerini öğrenin.",
+                "description": "Modern tehditlere karşı web sitelerinizi güvence altına almak için en iyi güvenlik uygulamalarını öğrenin.",
+                "content": "<p>Web güvenliği artık bir seçenek değil, zorunluluk. Siber saldırıların giderek arttığı bir çağda, geliştiricilerin güvenliği en baştan düşünmesi gerekiyor. HTTPS kullanımı, SQL enjeksiyonlarına karşı koruma, doğru kimlik doğrulama ve oturum yönetimi, kullanıcı girişlerinin doğrulanması gibi temel adımlar şart. Content Security Policy (CSP), güvenli çerezler ve hız sınırlamaları da uygulamanızı daha dayanıklı hale getirir. Bağımlılıkları düzenli olarak güncellemek ve zafiyet taramaları yapmak da geliştirme sürecinin parçası olmalıdır. Güvenliği ne kadar erken entegre ederseniz, uygulamanız o kadar sağlam olur.</p>"
+                },
+                "ru": {
+                "title": "Лучшие практики веб-безопасности, которые должен знать каждый разработчик",
+                "excerpt": "Защитите свои веб-приложения с помощью проверенных методов безопасности.",
+                "description": "Узнайте, как защитить свои сайты от современных угроз с помощью эффективных практик веб-безопасности.",
+                "content": "<p>Веб-безопасность — это не опция, а необходимость. В эпоху, когда кибератаки становятся всё более частыми, разработчики должны учитывать безопасность с самого начала. Ключевые практики включают использование HTTPS, защиту от SQL-инъекций, корректную аутентификацию и управление сессиями, а также валидацию всех пользовательских данных. Политика безопасности контента (CSP), защищённые cookies и ограничение количества запросов — дополнительные уровни защиты. Регулярное обновление зависимостей и проведение сканирования на уязвимости также должны быть частью процесса разработки. Чем раньше вы интегрируете безопасность, тем надёжнее будет ваше приложение.</p>"
+                }
+            }
+            },
+            "blog5": {
+                "id": 5,
+                "slug": "progressive-web-apps-future",
+                "cover": "/assets/images/blogs/pwa.png",
+                "published_at": "2024-07-16",
+                "content": "<p>Progressive Web Apps (PWAs) combine the best of web and mobile apps, offering fast, reliable, and engaging experiences directly from the browser. PWAs work offline, load quickly even on slow networks, and can be installed on a user’s home screen without visiting an app store. Technologies like service workers, web app manifests, and caching APIs power these benefits. For developers, PWAs reduce development costs while still providing native-like functionality. With companies like Twitter, Pinterest, and Starbucks successfully using PWAs, this approach is becoming essential for businesses wanting to boost user engagement and reach a wider audience.</p>",
+                "translations": {
+                    "en": {
+                    "title": "Why Progressive Web Apps Are the Future of Web Development",
+                    "excerpt": "PWAs offer the speed and feel of native apps with the reach of the web.",
+                    "description": "Learn how Progressive Web Apps are redefining the user experience and improving performance across devices.",
+                    "content": "<p>Progressive Web Apps (PWAs) combine the best of web and mobile apps, offering fast, reliable, and engaging experiences directly from the browser. PWAs work offline, load quickly even on slow networks, and can be installed on a user’s home screen without visiting an app store. Technologies like service workers, web app manifests, and caching APIs power these benefits. For developers, PWAs reduce development costs while still providing native-like functionality. With companies like Twitter, Pinterest, and Starbucks successfully using PWAs, this approach is becoming essential for businesses wanting to boost user engagement and reach a wider audience.</p>"
+                    },
+                    "tr": {
+                    "title": "Progressive Web Uygulamaları Web Geliştirmenin Geleceğidir",
+                    "excerpt": "PWAlar, yerel uygulama hızını ve hissini web erişimiyle birleştiriyor.",
+                    "description": "Progressive Web Uygulamaları ile kullanıcı deneyiminin nasıl yeniden tanımlandığını ve performansın nasıl arttığını öğrenin.",
+                    "content": "<p>Progressive Web Uygulamaları (PWA), web ve mobil uygulamaların en iyi özelliklerini bir araya getirerek tarayıcı üzerinden hızlı, güvenilir ve etkileyici deneyimler sunar. PWAlar, çevrimdışı çalışabilir, yavaş ağlarda bile hızlı yüklenir ve kullanıcılar uygulama mağazasına gitmeden ana ekrana ekleyebilir. Bu avantajlar; service worker'lar, web app manifest dosyaları ve cache API’leri sayesinde mümkün olur. Geliştiriciler için PWAlar, düşük maliyetle yerel uygulama benzeri işlevler sunar. Twitter, Pinterest ve Starbucks gibi büyük markaların başarıyla PWA kullanması, bu yaklaşımın kullanıcı etkileşimini artırmak ve daha geniş bir kitleye ulaşmak isteyen işletmeler için ne kadar önemli olduğunu gösteriyor.</p>"
+                    },
+                    "ru": {
+                    "title": "Почему прогрессивные веб-приложения — будущее веб-разработки",
+                    "excerpt": "PWA объединяют удобство нативных приложений с доступностью веба.",
+                    "description": "Узнайте, как прогрессивные веб-приложения улучшают пользовательский опыт и повышают производительность на всех устройствах.",
+                    "content": "<p>Прогрессивные веб-приложения (PWA) сочетают лучшие стороны веба и мобильных приложений, обеспечивая быстрый, надёжный и увлекательный опыт прямо из браузера. PWAs работают офлайн, быстро загружаются даже при медленном интернете и могут быть установлены на главный экран без посещения магазина приложений. Эти преимущества достигаются благодаря таким технологиям, как service workers, манифесты веб-приложений и API кэширования. Для разработчиков это способ сократить расходы, предлагая функциональность, похожую на нативные приложения. Компании вроде Twitter, Pinterest и Starbucks уже добились успеха с помощью PWAs — это доказывает, что прогрессивные веб-приложения становятся необходимостью для бизнеса, стремящегося увеличить вовлечённость пользователей и расширить охват аудитории.</p>"
+                    }
+                }
+                },
+                "blog7": {
+                    "id": 7,
+                    "slug": "website-performance-2024",
+                    "cover": "/assets/images/blogs/page-speed.png",
+                    "published_at": "2024-07-17",
+                    "content": "<p>Website speed directly affects user experience, SEO rankings, and conversion rates. In 2024, improving performance goes beyond just reducing image sizes. Developers must implement lazy loading, leverage browser caching, use a CDN, and eliminate render-blocking resources. JavaScript bundling and minimizing third-party scripts are also crucial. Core Web Vitals — like Largest Contentful Paint (LCP) and Cumulative Layout Shift (CLS) — remain essential benchmarks. By regularly auditing performance using tools like Lighthouse or WebPageTest, developers can ensure their websites remain fast, responsive, and user-friendly in the modern web landscape.</p>",
+                    "translations": {
+                        "en": {
+                        "title": "How to Improve Website Performance in 2024",
+                        "excerpt": "Boost your site's speed and UX with modern performance techniques.",
+                        "description": "Learn the most effective ways to optimize your website for speed, SEO, and user satisfaction in 2024.",
+                        "content": "<p>Website speed directly affects user experience, SEO rankings, and conversion rates. In 2024, improving performance goes beyond just reducing image sizes. Developers must implement lazy loading, leverage browser caching, use a CDN, and eliminate render-blocking resources. JavaScript bundling and minimizing third-party scripts are also crucial. Core Web Vitals — like Largest Contentful Paint (LCP) and Cumulative Layout Shift (CLS) — remain essential benchmarks. By regularly auditing performance using tools like Lighthouse or WebPageTest, developers can ensure their websites remain fast, responsive, and user-friendly in the modern web landscape.</p>"
+                        },
+                        "tr": {
+                        "title": "2024’te Web Sitesi Performansı Nasıl Artırılır?",
+                        "excerpt": "Modern tekniklerle sitenizin hızını ve kullanıcı deneyimini geliştirin.",
+                        "description": "2024 yılında web sitenizi hız, SEO ve kullanıcı memnuniyeti için optimize etmenin en etkili yollarını öğrenin.",
+                        "content": "<p>Web sitesi hızı, kullanıcı deneyimi, SEO sıralamaları ve dönüşüm oranları üzerinde doğrudan etkilidir. 2024’te performansı artırmak, sadece görselleri küçültmekle sınırlı değil. Lazy loading, tarayıcı önbellekleme, CDN kullanımı ve render engelleyici kaynakların kaldırılması gibi teknikler uygulanmalıdır. JavaScript dosyalarını birleştirmek ve üçüncü taraf scriptleri azaltmak da büyük önem taşır. Core Web Vitals — LCP ve CLS gibi — temel ölçütler olmaya devam ediyor. Lighthouse veya WebPageTest gibi araçlarla düzenli performans denetimleri yaparak, geliştiriciler modern web ortamında hızlı ve kullanıcı dostu siteler oluşturabilirler.</p>"
+                        },
+                        "ru": {
+                        "title": "Как улучшить производительность сайта в 2024 году",
+                        "excerpt": "Ускорьте ваш сайт с помощью современных методик оптимизации.",
+                        "description": "Узнайте, как оптимизировать сайт для повышения скорости, SEO и удобства пользователей в 2024 году.",
+                        "content": "<p>Скорость сайта напрямую влияет на пользовательский опыт, SEO и конверсии. В 2024 году улучшение производительности выходит за рамки простого уменьшения изображений. Разработчикам следует применять отложенную загрузку (lazy loading), кэширование в браузере, использовать CDN и устранять ресурсы, блокирующие рендеринг. Важно также объединять и оптимизировать JavaScript, а также минимизировать сторонние скрипты. Основные веб-показатели (Core Web Vitals), такие как LCP и CLS, по-прежнему являются ключевыми метриками. Проводя регулярные аудиты с помощью инструментов вроде Lighthouse и WebPageTest, разработчики могут обеспечить высокую скорость и удобство использования своих сайтов.</p>"
+                        }
+                    }
+                    }
+
 }
 
 }

@@ -1,7 +1,57 @@
+export interface Errors {
+    SorryNoContentFound: string;
+    TheBlogPostRemoved: string;
+    BackToBlogs: string;
+  }
+
+export interface Links {
+    Home: string;
+    Services: string;
+    About: string;
+    Blogs: string;
+    Contact: string;
+    Help: string;
+    Guide: string;
+    FAQ: string;
+    QuickLinks: string;
+  }
+
+export interface Services {
+    [key: string]: {
+     title: string;
+     description: string;
+    }
+  }
+
+export interface ServicesPage {
+    ReadyToBringYourProjectToLife: string;
+    heroSection: {
+     title: string;
+     content: string;
+    }
+  }
+
+
 export interface CommontContext {
     title: string;
     description: string;
-   
+    ourBlogs: string;
+    blogSubtitle: string;
+    contactUs: string;
+    Email: string;
+    Phone: string;
+    follow_us: string;
+    ourServices: string;
+    WeCraftScalableFastAndModernWebsitesThatElevateYourBusinessPresence: string;
+    all_rights_reserved: string;
+    readMore: string;
+    LatestBlogPosts: string;
+    FeaturedProjects: string;
+    ServicesPage: ServicesPage
+    ServiceCards: Services;
+    Links: Links;
+    Errors: Errors;
+    
   }
   
 export interface HeroSection {
@@ -70,3 +120,13 @@ export interface CallToAction {
     description: string;
     buttonText: string;
   }
+
+export interface Translations {
+  heroSection?: HeroSection;
+  whoWeAreSection?: whoWeAreSection;
+  OurValues?: OurValuesSectionContent;  // import or define this interface
+  OurProcess?: OurProcess;
+  TechnologiesSection?: Technologies;
+  TeamSection?: Team;
+  CallToAction?: CallToAction;
+}

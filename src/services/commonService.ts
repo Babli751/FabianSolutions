@@ -1,4 +1,6 @@
 // src/services/commonService.ts
+import { CommontContext } from "@/types/commons";
+
 
 interface ImageSlide {
     src: string;
@@ -50,7 +52,6 @@ interface ImageSlide {
         throw new Error('Failed to fetch howItWorks data');
       }
       const data = await response.json();
-      console.log("fetched HIW data:", data);
       return data.howItWorks; // Directly return the object
     } catch (error) {
       console.error("Error fetching howItWorks:", error);
@@ -59,41 +60,9 @@ interface ImageSlide {
   };
   
 
-  interface HowCanIMakeReservation {
-    title: string;
-    description1: string;
-    description2: string;
-  }
-  
-  const fetchHowCanIMakeReservation = async (locale: string): Promise<HowCanIMakeReservation> => {
-    // If no locale, use 'en' by default (do not check immediately)
-    const currentLocale = locale || 'en'; // Fallback to 'en' if locale is not available
-  
-    try {
-      const response = await fetch(`/locales/${currentLocale}/${currentLocale}.json`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch HowCanIMakeReservation data');
-      }
-      const data = await response.json();
-      console.log("fetched HowCanIMakeReservation data:", data);
-      return data.HowCanIMakeReservation;
-    } catch (error) {
-      console.error("Error fetching HowCanIMakeReservation:", error);
-      throw error;
-    }
-  };
-
-  interface Services {
-    title: string;
-    description: string;
-  }
 
 
-  interface CommontContext {
-    title: string;
-    description: string;
-    ServiceCards: Services;
-  }
+
 
   const fetchCommontContext = async (locale: string): Promise<CommontContext> => {
     // If no locale, use 'en' by default (do not check immediately)
@@ -105,7 +74,6 @@ interface ImageSlide {
         throw new Error('Failed to fetch CommontContext data');
       }
       const data = await response.json();
-      console.log("fetched CommontContext data:", data);
       return data.CommontContext;
     } catch (error) {
       console.error("Error fetching CommontContext:", error);
@@ -127,7 +95,6 @@ interface ImageSlide {
         throw new Error('Failed to fetch Faq Context data');
       }
       const data = await response.json();
-      console.log("fetched Faq Context data:", data);
       return data.faq;
     } catch (error) {
       console.error("Error fetching Faq Context:", error);
@@ -137,7 +104,6 @@ interface ImageSlide {
   export { fetchCommontContext }
   export { fetchFaqContext }
 
-  export { fetchHowCanIMakeReservation };
   export { fetchSliders };
   export { fetchHIW };
   

@@ -23,8 +23,6 @@ const LanguageSwitcher = ({ setLanguageOpen }: { setLanguageOpen: React.Dispatch
 
   if (!mounted) return null;
 
-  const locales = ["en", "ru", "tr"];
-
   const switchLanguage = (newLocale: string) => {
     // Get current parameters from the URL
     const params = searchParams ? searchParams.toString() : '';

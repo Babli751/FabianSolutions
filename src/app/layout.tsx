@@ -9,6 +9,8 @@ import { LoaderProvider } from '@/context/LoaderContext'; // Wrap the app with t
 import { NotificationProvider } from '@/context/NotificationContext';
 import Loader from '@/components/commons/Loaders/Loader';
 import WhatsAppButton from "@/components/commons/Buttons/WhatsappButton";
+import SEOHead from "@/components/base/SeoHead";
+
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
@@ -22,22 +24,23 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     if (!locales.includes(pathLocale)) {
       router.replace(`/en${pathname}`);
     }
-  }, [pathLocale]);
+  }, [locales, pathLocale, pathname, router]);
 
 
 
   return (
     <html lang={pathLocale || "en"} suppressHydrationWarning data-theme="dark">
+      <SEOHead locale={pathLocale}/>
       <body className="min-h-screen bg-white dark:bg-gray-800 text-black dark:text-white">
-         <LoaderProvider>
+    <LoaderProvider>
      <NotificationProvider>
         <Navbar />
           <Loader />
            <WhatsAppButton />
       <main className="flex-grow">{children}</main>
-      <Footer />
+         <Footer />
       </NotificationProvider>
-          </LoaderProvider>
+    </LoaderProvider>
       </body>
     </html>
   );

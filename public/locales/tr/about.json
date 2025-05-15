@@ -1,81 +1,82 @@
 {
   "AboutPageContent": {
      "heroSection": {
-    "title": "About Us",
-    "description":"We craft high-performance digital experiences and modern websites that drive results."
+    "title": "Hakkımızda",
+    "description":"Sonuçları yönlendiren yüksek performanslı dijital deneyimler ve modern web siteleri tasarlıyoruz.",
+    "cta":"Nasıl çalıştığımızı öğrenin"
       },
       "whoWeAreSection": {
-        "title": "Who We Are",
-        "description":"We're a team of forward-thinking developers and designers. We believe technology should serve people— that's why we build clean, modern, accessible web solutions that elevate businesses and ideas."
+        "title": "Biz Kimiz",
+        "description":"İleri görüşlü geliştiricilerden ve tasarımcılardan oluşan bir ekibiz. Teknolojinin insanlara hizmet etmesi gerektiğine inanıyoruz; bu nedenle işletmeleri ve fikirleri yükselten temiz, modern ve erişilebilir web çözümleri oluşturuyoruz."
       },
       "OurValues": {
-        "title": "Our Core Values",
+        "title": "Temel Değerlerimiz",
         "value1":{
-            "title": "Innovation",
-            "description":"We stay ahead of trends and embrace change.",
+            "title": "Yenilik",
+            "description":"Trendlerin önünde kalıyoruz ve değişimi benimsiyoruz.",
             "icon":"🚀"
         },
         "value2":{
-            "title": "Integrity",
-            "description":"We operate with honesty and full transparency.",
+            "title": "Dürüstlük",
+            "description":"Dürüstlük ve tam şeffaflıkla çalışıyoruz.",
             "icon":"🤝"
         },
         "value3":{
-            "title": "Excellence",
-            "description":"We strive for perfection in every pixel and line of code.",
+            "title": "Mükemmellik",
+            "description":"Her pikselde ve kod satırında mükemmellik için çabalıyoruz.",
             "icon":"🎯"
         }
       },
       "OurProcess": {
-        "title": "Our Process",
-        "description":"We work with a clear, strategic process that ensures quality and transparency at every stage.",
+        "title": "Prosesimiz",
+        "description":"Her aşamada kalite ve şeffaflığı garanti eden net, stratejik bir süreçle çalışıyoruz.",
         "steps":{
           "step1":{
-            "stepTitle":"Discovery"
+            "stepTitle":"Keşif"
           },
           "step2":{
-            "stepTitle":"Design"
+            "stepTitle":"Tasarım"
           },
           "step3":{
-            "stepTitle":"Development"
+            "stepTitle":"Geliştirme"
           },
           "step4":{
-            "stepTitle":"Deployment"
+            "stepTitle":"Dağıtım"
           }
         }
       },
       "TechnologiesSection":{
-          "title":"Technologies We Use",
-          "description":"We work with modern tools to build future-ready solutions"
+          "title":"Kullandığımız Teknolojiler",
+          "description":"Geleceğe hazır çözümler oluşturmak için modern araçlarla çalışıyoruz"
         },
         "TeamSection":{
-          "title":"Meet Our Team",
-          "description":"A collective of specialists dedicated to digital excellence.",
+          "title":"Ekibimizle Tanışın",
+          "description":"Dijital mükemmelliğe adanmış uzmanlardan oluşan bir kolektif.",
           "specialists":{
               "specialist1": {
-                "name":"Rashad Naghiyev",
-                "role":"Creative Director",
-                "photo": "/assets/images/team/cv-photo.jpg",
-                "linkedin": "https://www.linkedin.com/in/rashad-naghiyev-73b181237/"
+                "name":"Javanshir Mammadov",
+                "role":"Proje Yöneticisi",
+                "photo": "",
+                "linkedin": "https://www.linkedin.com/in/javanshir-mammadov-3b23828a/"
               },
               "specialist2": {
-                "name":"Cavansir Karimov",
-                "role":"Lead Developer",
+                "name":"Rashad Naghiyev",
+                "role":"Web Geliştirici",
                 "photo": "",
-                "linkedin": ""
+                "linkedin": "https://www.linkedin.com/in/rashad-naghiyev-73b181237/"
               },
               "specialist3": {
-                "name":"Neman Osman",
-                "role":"UI/UX Designer",
+                "name":"Neman Mammadli",
+                "role":"Web Geliştirici",
                 "photo": "",
-                "linkedin": ""
+                "linkedin": "https://www.linkedin.com/in/mneman944/"
               }
           }
       },
       "CallToAction":{
-        "title":"Ready to Work with Us?",
-        "description":"Let’s build something meaningful, together.",
-        "buttonText":"Contact Us"
+        "title":"Bizimle Çalışmaya Hazır mısınız?",
+        "description":"Birlikte anlamlı bir şey inşa edelim.",
+        "buttonText":"Bizimle İletişime Geçin"
       }
 
   }

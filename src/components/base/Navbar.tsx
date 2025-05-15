@@ -1,6 +1,6 @@
 // Navbar.tsx
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { IoMdArrowDropdown } from "react-icons/io";
 import LanguageSwitcher from "../commons/Buttons/LanguageSwitcher";
@@ -10,7 +10,7 @@ import { useNotification } from '@/context/NotificationContext';
 import { fetchCommontContext } from "@/services/commonService";
 import { FiMenu, FiX, FiMoon, FiSun } from 'react-icons/fi';
 import Link from "next/link";
-
+import { CommontContext } from "@/types/commons";
 
 const languages = [
   { code: "en", name: "English", flag: "/assets/flags/united-kingdom.png" },
@@ -19,17 +19,16 @@ const languages = [
 ];
 
 export default function Navbar() {
-  const [error, setError] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [languageOpen, setLanguageOpen] = useState<boolean>(false);
   const [languageOpenMobile, setLanguageOpenMobile] = useState<boolean>(false);
-  const [translations, setTranslations] = useState<any>(null);
+  const [translations, setTranslations] = useState<CommontContext | null>(null);
   const { setLoading } = useLoader();
   const { setNotification } = useNotification();
   const pathname = usePathname();
   const router = useRouter();
-  const locales = ["en", "ru", "tr"];
+  const locales = useMemo(() => ["en", "ru", "tr"], []);
 
   // Refs for detecting clicks outside of dropdowns
   const languageRefDesktop = useRef<HTMLDivElement | null>(null);
@@ -61,7 +60,7 @@ export default function Navbar() {
     if (!locales.includes(pathLocale)) {
       router.replace(`/en${pathname}`);
     }
-  }, [pathLocale]);
+  }, [pathLocale, locales, pathname, router]);
 
   const currentLanguage = languages.find((lang) => lang.code === pathLocale) || languages[0];
 
@@ -107,14 +106,14 @@ export default function Navbar() {
         setTranslations(data);
       } catch (error) {
         setNotification({ message: 'Failed to load content.', type: 'error' });
-        setError("Failed to load content.");
+        console.error(error)
       } finally {
         setLoading(false);
       }
     };
 
     loadTranslations();
-  }, [pathLocale]); // Use pathLocale instead of locale
+  }, [pathLocale, setLoading, setNotification]); // Use pathLocale instead of locale
 
 const menuItems = [
   { label: translations?.Links?.Home || "Home", path: "" },
@@ -128,7 +127,7 @@ const menuItems = [
     <nav className="fixed top-0 w-full z-50 backdrop-blur-md bg-white/70 dark:bg-gray-900/70 shadow-md">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <h1 className="text-2xl font-extrabold bg-gradient-to-r from-blue-500 to-indigo-600 text-transparent bg-clip-text tracking-tight dark:from-blue-400 dark:to-indigo-400">
-          fabiantech.solutions
+          FabianTech
         </h1>
 
         {/* Desktop Menu */}

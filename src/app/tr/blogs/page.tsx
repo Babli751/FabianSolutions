@@ -11,10 +11,12 @@ import { fetchBlogs } from "@/services/BlogService";
 import { Blog } from "@/types/blogs";
 import { useNotification } from "@/context/NotificationContext";
 import NotificationModal from "@/components/commons/Modals/NotificationModal";
+import { CommontContext } from "@/types/commons";
+
 
 export default function BlogPage() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [translations, setTranslations] = useState<any>(null);
+  const [translations, setTranslations] = useState<CommontContext | null>(null);
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
   const pathLocale = pathname.split("/")[1] || "en";
@@ -22,6 +24,7 @@ export default function BlogPage() {
 
   useEffect(() => {
     const loadData = async () => {
+      setLoading(true);
       try {
         const [blogsData, translationData] = await Promise.all([
           fetchBlogs(),
@@ -30,14 +33,17 @@ export default function BlogPage() {
         setBlogs(blogsData);
         setTranslations(translationData);
       } catch (error) {
-        setNotification({message: 'Failed to fetch data.', type: 'error' });
+        setLoading(false);
+        setNotification({message: 'Failed to fetch data.', type: "error" });
+        console.error(error)
       } finally {
         setLoading(false);
       }
     };
 
     loadData();
-  }, [pathLocale]);
+  }, [pathLocale, setNotification]);
+
 
     const handleClose = () => {
     closeNotification();
@@ -50,8 +56,6 @@ export default function BlogPage() {
       </div>
     );
   }
-
-  console.log("Blog:", blogs)
 
   return (
     <>
@@ -71,25 +75,29 @@ export default function BlogPage() {
       <section className="max-w-6xl mx-auto px-6 mt-16 mb-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {blogs.map((blog, index) => (
-         <BlogCard
-              key={index}
-              title={blog.translations[pathLocale]?.title || blog.translations['en']?.title}
-              excerpt={blog.translations[pathLocale]?.excerpt || blog.translations['en']?.excerpt}
-              image={blog.cover}
-              slug={blog.slug}
-              locale={pathLocale}
-            />
+        <BlogCard
+          key={index}
+          id={blog.id}
+          title={blog.translations[pathLocale]?.title || blog.translations['en']?.title}
+          excerpt={blog.translations[pathLocale]?.excerpt || blog.translations['en']?.excerpt}
+          image={blog.cover}
+          slug={blog.slug}
+          locale={pathLocale}
+        />
+
           ))}
         </div>
       </section>
 
-          {/* Notification Modal */}
+         {/* Notification Modal */}
    <NotificationModal
           isOpen={notification.isOpen}
           message={notification.message}
           type={notification.type}
+  
           onClose={handleClose}
         />
+
     </>
   );
 }

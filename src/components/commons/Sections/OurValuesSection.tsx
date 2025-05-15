@@ -1,6 +1,6 @@
 // src/components/commons/Section/OurValuesSection.tsx
 import { motion } from 'framer-motion';
-import { OurValues, OurValuesSectionContent } from '@/types/commons';
+import { OurValuesSectionContent } from '@/types/commons';
 
 interface OurValuesSectionProps {
   sectionTitle: string
@@ -25,8 +25,8 @@ export default function OurValuesSection({ sectionTitle, translations }: OurValu
           </motion.h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            {Object.entries(translations.OurValues || {})
-  .filter(([key, value]) => typeof value === "object" && value !== null)
+            {Object.entries(translations?.OurValues || {})
+  .filter(([value]) => typeof value === "object" && value !== null)
   .map(([key, value]) => (
     <motion.div
       key={key}

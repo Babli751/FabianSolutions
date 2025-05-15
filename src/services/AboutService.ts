@@ -1,13 +1,13 @@
-import { HeroSection, whoWeAreSection, OurValues, OurProcess, TechnologiesSection, TeamSection, CallToAction } from "@/types/commons";
+import { HeroSection, whoWeAreSection, OurValuesSectionContent, OurProcess, Technologies, Team, CallToAction } from "@/types/commons";
 
 
 interface AboutPageProps {
     HeroSection: HeroSection;
     whoWeAreSection: whoWeAreSection;
-    OurValues: OurValues;
+    OurValues: OurValuesSectionContent;
     OurProcess: OurProcess;
-    TechnologiesSection: TechnologiesSection;
-    TeamSection: TeamSection;
+    TechnologiesSection: Technologies;
+    TeamSection: Team;
     CallToAction: CallToAction;
 
 }
@@ -22,7 +22,6 @@ interface AboutPageProps {
         throw new Error('Failed to fetch fetchAboutPageContent data');
       }
       const data = await response.json();
-      console.log("fetched fetchAboutPageContent data:", data);
       return data.AboutPageContent;
     } catch (error) {
       console.error("Error fetching fetchAboutPageContent:", error);

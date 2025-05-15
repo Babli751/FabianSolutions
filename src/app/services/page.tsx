@@ -1,24 +1,46 @@
 // src/app/services/page.tsx
 
 "use client";
-import { FaCode, FaMobileAlt, FaPaintBrush } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { fetchCommontContext } from "@/services/commonService";
+import { fetchAboutPageContent } from "@/services/AboutService";
 import { usePathname } from "next/navigation";
 import Loader from "@/components/commons/Loaders/Loader";
 import ServiceCard from "@/components/commons/Cards/ServiceCard";
+import { useNotification } from "@/context/NotificationContext";
 import NotificationModal from "@/components/commons/Modals/NotificationModal";
-import { useNotification } from '@/context/NotificationContext';
+import CallToActionSection from "@/components/commons/Sections/CallToActionSection";
+import TechnologiesSection from "@/components/commons/Sections/TechnologiesSection";
+import { CommontContext, Translations, Services } from "@/types/commons";
+import {
+  FaCode,
+  FaMobileAlt,
+  FaPaintBrush,
+  FaBullhorn,
+  FaSearch,
+  FaPlug,
+  FaShoppingCart,
+  FaTools,
+  FaPalette
+} from "react-icons/fa";
 
 const iconMap: Record<string, React.ReactElement> = {
   "Web Development": <FaCode />,
   "Mobile Apps": <FaMobileAlt />,
   "UI/UX Design": <FaPaintBrush />,
+  "SMM (Social Media Marketing)": <FaBullhorn />,
+  "SEO Optimization": <FaSearch />,
+  "API Development": <FaPlug />,
+  "E-commerce Solutions": <FaShoppingCart />,
+  "Maintenance & Support": <FaTools />,
+  "Branding & Identity": <FaPalette />,
 };
 
 export default function ServicesPage() {
-  const [services, setServices] = useState<any[]>([]);
-  const [translations, setTranslations] = useState<any>(null);
+  type Service = Services[keyof Services];
+  const [services, setServices] = useState<Service[]>([]);
+  const [commonTranslations, setCommonTranslations] =  useState<CommontContext | null>(null);
+  const [aboutTranslations, setAboutTranslations] =  useState<Translations | null>(null);
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
   const pathLocale = pathname.split("/")[1] || "en";
@@ -26,22 +48,29 @@ export default function ServicesPage() {
 
   useEffect(() => {
     const loadData = async () => {
+      setLoading(true)
       try {
-        const data = await fetchCommontContext(pathLocale);
-        const serviceData = Object.values(data?.ServiceCards || {});
-        setTranslations(data);
+        const [translationAboutData, commmonTranslationData] = await Promise.all([
+          fetchAboutPageContent(pathLocale),
+          fetchCommontContext(pathLocale),
+        ]);
+        const serviceData = Object.values(commmonTranslationData?.ServiceCards || {});
+        setAboutTranslations(translationAboutData);
+        setCommonTranslations(commmonTranslationData);
         setServices(serviceData);
       } catch (error) {
-        setNotification({ message: 'Failed to load data.', type: 'error' });
-      } finally {
+        setLoading(false)
+        setNotification({message: 'Failed to fetch data.', type: "error" });
+        console.error(error)
+      } finally { 
         setLoading(false);
       }
     };
 
     loadData();
-  }, [pathLocale]);
+  }, [pathLocale, setNotification]);
 
-    const handleClose = () => {
+        const handleClose = () => {
     closeNotification();
   };
 
@@ -57,15 +86,15 @@ export default function ServicesPage() {
    <>
       <section className="max-w-6xl mt-30 mx-auto">
         <h1 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-6">
-            { translations?.ServicesPage?.heroSection?.title || 'Our Services'}
+            { commonTranslations?.ServicesPage?.heroSection?.title || 'Our Services'}
 
         </h1>
         <p className="text-center text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-12">
-             { translations?.ServicesPage?.heroSection?.content || 'We offer tailored digital solutions to bring your ideas to life and help your business grow.'}
+             { commonTranslations?.ServicesPage?.heroSection?.content || 'We offer tailored digital solutions to bring your ideas to life and help your business grow.'}
        
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 mb-10 md:grid-cols-2 lg:grid-cols-3 gap-8">
          {services.map((service, index) => (
                       <ServiceCard
                         key={index}
@@ -75,22 +104,23 @@ export default function ServicesPage() {
                       />
                     ))}
         </div>
-      </section>
+      </section> 
 
-      {/* CTA */}
-      <section className="mt-20 text-center">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
-          { translations?.ServicesPage?.heroSection?.ReadyToBringYourProjectToLife || 'Ready to bring your project to life?'}
-        </h2>
-        <a
-          href={`/${pathLocale}/contact`}
-          className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition"
-        >
-           { translations?.contactUs || 'Contact Us'}
-        </a>
-      </section>
-      
-       {/* Notification Modal */}
+      {/* Technologies */}
+      <TechnologiesSection 
+            title={aboutTranslations?.TechnologiesSection?.title || "Technologies We Use"}
+            description={aboutTranslations?.TechnologiesSection?.description ||
+                  "We work with modern tools to build future-ready solutions"}
+          />
+
+      {/* Call to Action */}
+          <CallToActionSection
+             title={ aboutTranslations?.CallToAction?.title || "Ready to Work with Us?"}
+             description={ aboutTranslations?.CallToAction?.description || "Let’s build something meaningful, together."}
+             buttonText={ aboutTranslations?.CallToAction?.buttonText || "Contact Us"}
+           />
+
+                     {/* Notification Modal */}
    <NotificationModal
           isOpen={notification.isOpen}
           message={notification.message}
@@ -98,7 +128,7 @@ export default function ServicesPage() {
   
           onClose={handleClose}
         />
-
+        
       </>
   );
 }

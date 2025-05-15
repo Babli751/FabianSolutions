@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://fabiantech.solutions
+
+# Sitemaps
+Sitemap: https://fabiantech.solutions/sitemap.xml

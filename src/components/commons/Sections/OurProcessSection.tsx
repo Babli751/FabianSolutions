@@ -32,6 +32,7 @@ export default function OurProcessSection({ title, description, steps }: OurProc
         {Object.entries(steps)
           .sort(([a], [b]) => a.localeCompare(b))
           .map(([_, step], i) => {
+            console.log(_)
             const isEven = i % 2 === 0;
             return (
               <motion.div

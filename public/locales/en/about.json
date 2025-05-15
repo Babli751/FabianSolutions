@@ -1,8 +1,9 @@
 {
   "AboutPageContent": {
-     "heroSection": {
+    "heroSection": {
     "title": "About Us",
-    "description":"We craft high-performance digital experiences and modern websites that drive results."
+    "description":"We craft high-performance digital experiences and modern websites that drive results.",
+    "cta":"Learn how we work"
       },
       "whoWeAreSection": {
         "title": "Who We Are",
@@ -53,22 +54,22 @@
           "description":"A collective of specialists dedicated to digital excellence.",
           "specialists":{
               "specialist1": {
-                "name":"Rashad Naghiyev",
-                "role":"Creative Director",
-                "photo": "/assets/images/team/cv-photo.jpg",
-                "linkedin": "https://www.linkedin.com/in/rashad-naghiyev-73b181237/"
+                "name":"Javanshir Mammadov",
+                "role":"Project Manager",
+                "photo": "",
+                "linkedin": "https://www.linkedin.com/in/javanshir-mammadov-3b23828a/"
               },
               "specialist2": {
-                "name":"Cavansir Karimov",
-                "role":"Lead Developer",
+                "name":"Rashad Naghiyev",
+                "role":"Web Developer",
                 "photo": "",
-                "linkedin": ""
+                "linkedin": "https://www.linkedin.com/in/rashad-naghiyev-73b181237/"
               },
               "specialist3": {
-                "name":"Neman Osman",
-                "role":"UI/UX Designer",
+                "name":"Neman Mammadli",
+                "role":"Web Developer",
                 "photo": "",
-                "linkedin": ""
+                "linkedin": "https://www.linkedin.com/in/mneman944/"
               }
           }
       },

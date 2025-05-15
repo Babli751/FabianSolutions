@@ -10,7 +10,7 @@ const Loader: React.FC<LoaderProps> = ({ size = "80", color = "#4F46E5" }) => {
   const { loading } = useLoader(); // Get loading state from context
 
   if (!loading) return null; // Don't render the loader if not loading
-
+  console.log(size, color)
 
   return (
     <div className="default-loader">

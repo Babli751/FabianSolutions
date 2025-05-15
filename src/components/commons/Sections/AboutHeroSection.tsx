@@ -1,9 +1,13 @@
 // src/components/commons/Section/AboutHeroSection.tsx
+"use client";
+import { usePathname } from "next/navigation";
 import { motion } from 'framer-motion';
 import { HeroSection } from '@/types/commons';
 
 
 export default function AboutHeroSection({ title, description, cta }: HeroSection) {
+      const pathname = usePathname();
+      const pathLocale = pathname.split("/")[1] || "en";
   return (
     <>
       {/* Hero */}
@@ -30,7 +34,7 @@ export default function AboutHeroSection({ title, description, cta }: HeroSectio
           {/* Optional CTA */}
           <div className="mt-10">
             <a
-              href="#our-process"
+              href={`/${pathLocale}/contact`}
               className="inline-block bg-white text-indigo-600 font-semibold px-6 py-3 rounded-full shadow-lg hover:bg-gray-100 transition"
             >
              {cta}

@@ -1,0 +1,176 @@
+{
+    "Projects":{
+        "project1":{
+            "id": 1,
+            "slug":"Cryptocurrency Arbitrage Platform",
+            "cover":"/assets/images/projects/Cryptocurrency.jpeg",
+            "published_at": "2024-07-01",
+            "translations": {
+                    "en": {
+                    "title": "Cryptocurrency Arbitrage Platform",
+                    "excerpt": "Cryptocurrency Arbitrage Platform",
+                    "description": "Automated trading system that identifies price differences across exchanges"
+                    },
+                    "tr": {
+                    "title": "Kripto Para Arbitraj Platformu",
+                    "excerpt": "Kripto Para Arbitraj Platformu",
+                    "description": "Borsalar arası fiyat farklarını belirleyen otomatik ticaret sistemi"
+                    },
+                    "ru": {
+                    "title": "Платформа арбитража криптовалют",
+                    "excerpt": "Платформа арбитража криптовалют",
+                    "description": "Автоматизированная торговая система, которая определяет разницу цен на биржах"
+                    }
+                },
+            "tags":{
+                "tag1":{
+                    "tagName":"Laravel"
+                },
+                "tag2":{
+                    "tagName":"Vue.js"
+                },
+                "tag3":{
+                    "tagName":"WebSockets"
+                }
+            }
+        },
+        "project2":{
+            "id": 2,
+            "slug":"Python Trading Bot for Binance",
+            "cover":"/assets/images/projects/Python-Trading-Bot-for-Binance.jpeg",
+            "published_at": "2024-07-01",
+            "translations": {
+                    "en": {
+                    "title": "Python Trading Bot for Binance",
+                    "excerpt": "Python Trading Bot for Binance",
+                    "description": "Algorithm-based trading bot with real-time market analysis"
+                    },
+                    "tr": {
+                    "title": "Binance için Python Ticaret Botu",
+                    "excerpt": "Binance için Python Ticaret Botu",
+                    "description": "Algorithm-based trading bot with real-time market analysis"
+                    },
+                    "ru": {
+                    "title": "Python Trading Bot для Binance",
+                    "excerpt": "Python Trading Bot для Binance",
+                    "description": "Торговый бот на основе алгоритма с анализом рынка в реальном времени"
+                    }
+                },
+            "tags":{
+                "tag1":{
+                    "tagName":"Python"
+                },
+                "tag2":{
+                    "tagName":"TensorFlow"
+                },
+                "tag3":{
+                    "tagName":"Binance API"
+                }
+            }
+        },
+        "project3":{
+            "id": 3,
+            "slug":"E-commerce Websites (Multilingual)",
+            "cover":"/assets/images/projects/E-commerce-Websites-(Multilingual).jpeg",
+            "published_at": "2024-07-01",
+            "translations": {
+                    "en": {
+                    "title": "E-commerce Websites (Multilingual)",
+                    "excerpt": "E-commerce Websites (Multilingual)",
+                    "description": "Multi-vendor marketplace supporting 12+ languages"
+                    },
+                    "tr": {
+                    "title": "E-ticaret Web Siteleri (Çok Dilli)",
+                    "excerpt": "E-ticaret Web Siteleri (Çok Dilli)",
+                    "description": "12+ dili destekleyen çok satıcılı pazar yeri"
+                    },
+                    "ru": {
+                    "title": "Электронная коммерция Веб-сайты (многоязычные)",
+                    "excerpt": "Электронная коммерция Веб-сайты (многоязычные)",
+                    "description": "Мультивендорная торговая площадка с поддержкой 12+ языков"
+                    }
+                },
+            "tags":{
+                "tag1":{
+                    "tagName":"Magento"
+                },
+                "tag2":{
+                    "tagName":"React"
+                },
+                "tag3":{
+                    "tagName":"ElasticSearch"
+                }
+            }
+        },
+        "project4":{
+            "id": 4,
+            "slug":"University Syllabus System",
+            "cover":"/assets/images/projects/University-Syllabus-System.jpeg",
+            "published_at": "2024-07-01",
+            "translations": {
+                    "en": {
+                    "title": "University Syllabus System",
+                    "excerpt": "University Syllabus System",
+                    "description": "Comprehensive LMS for higher education institutions"
+                    },
+                    "tr": {
+                    "title": "Üniversite Müfredat Sistemi",
+                    "excerpt": "Üniversite Müfredat Sistemi",
+                    "description": "Yükseköğretim kurumları için kapsamlı LMS"
+                    },
+                    "ru": {
+                    "title": "Система университетских программ",
+                    "excerpt": "Система университетских программ",
+                    "description": "Комплексная LMS для высших учебных заведений"
+                    }
+                },
+            "tags":{
+                "tag1":{
+                    "tagName":"Drupal"
+                },
+                "tag2":{
+                    "tagName":"MySQL"
+                },
+                "tag3":{
+                    "tagName":"AWS"
+                }
+            }
+        },
+        "project5":{
+            "id": 5,
+            "slug":"Drag-and-drop Website Builder",
+            "cover":"/assets/images/projects/Drag-and-drop-Website-Builder.png",
+            "published_at": "2024-07-01",
+            "translations": {
+                    "en": {
+                    "title": "Drag-and-drop Website Builder",
+                    "excerpt": "Drag-and-drop Website Builder",
+                    "description": "No-code solution allowing users to build responsive websites"
+                    },
+                    "tr": {
+                    "title": "Sürükle ve bırak Web Sitesi Oluşturucu",
+                    "excerpt": "Sürükle ve bırak Web Sitesi Oluşturucu",
+                    "description": "Kullanıcıların duyarlı web siteleri oluşturmasına olanak tanıyan kodsuz çözüm"
+                    },
+                    "ru": {
+                    "title": "Конструктор сайтов с функцией перетаскивания",
+                    "excerpt": "Конструктор сайтов с функцией перетаскивания",
+                    "description": "Решение без кода, позволяющее пользователям создавать адаптивные веб-сайты"
+                    }
+                },
+            "tags":{
+                "tag1":{
+                    "tagName":"PHP"
+                },
+                "tag2":{
+                    "tagName":"MySQL"
+                },
+                "tag3":{
+                    "tagName":"React"
+                }
+            }
+        }
+        
+    }
+
+}

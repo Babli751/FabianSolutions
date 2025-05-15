@@ -2,22 +2,19 @@
 import { Metadata } from "next";
 import { fetchBlogDetails } from "@/services/BlogService";
 
-interface Props {
-  params: { slug: string; locale: string };
-}
-
-export async function generateBlogMetadata({ params }: Props): Promise<Metadata> {
-  // `params` are already resolved, no need to await them here
+export async function generateMetadata({ params }: { params: { slug: string, locale: string } }): Promise<Metadata> {
   const blog = await fetchBlogDetails(params.slug, params.locale);
   
   if (!blog) return {};
 
+  const translation = blog.translations[params.locale];
+
   return {
-    title: blog.translations.title,
-    description: blog.translations.excerpt,
+    title: translation.title,
+    description: translation.excerpt,
     openGraph: {
-      title: blog.translations.title,
-      description: blog.translations.excerpt,
+      title: translation.title,
+      description: translation.excerpt,
       images: [{ url: blog.cover }],
     },
   };

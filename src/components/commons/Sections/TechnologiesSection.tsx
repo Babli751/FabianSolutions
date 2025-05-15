@@ -1,7 +1,6 @@
 // src/components/commons/Sections/TechnologiesSection.tsx
 import { motion } from 'framer-motion';
 import { Technologies } from '@/types/commons';
-import Link from "next/link";
 import {
   SiNextdotjs,
   SiReact,
