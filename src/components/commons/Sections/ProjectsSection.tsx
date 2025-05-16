@@ -80,8 +80,9 @@ export default function ProjectsSection() {
           }}
         >
           {projects.map((project) => (
-            <SwiperSlide key={project.id}>
-              <div className="p-4 h-full">
+            <SwiperSlide 
+            key={project.id}>
+              <div className="h-full">
                 <ProjectCard
                   id={project.id}
                   slug={project.slug}

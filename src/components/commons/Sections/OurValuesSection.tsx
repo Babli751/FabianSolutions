@@ -9,6 +9,7 @@ interface OurValuesSectionProps {
 
 
 export default function OurValuesSection({ sectionTitle, translations }: OurValuesSectionProps) {
+  console.log(translations)
   return (
     <>
       {/* Our Values */}
@@ -25,21 +26,21 @@ export default function OurValuesSection({ sectionTitle, translations }: OurValu
           </motion.h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            {Object.entries(translations?.OurValues || {})
-  .filter(([value]) => typeof value === "object" && value !== null)
-  .map(([key, value]) => (
-    <motion.div
-      key={key}
-      whileHover={{ scale: 1.04 }}
-      transition={{ type: "spring", stiffness: 200 }}
-      className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-8 rounded-3xl shadow-sm hover:shadow-md transition-shadow"
-    >
-      <div className="text-5xl mb-4">{value.icon}</div>
-      <h3 className="text-xl font-semibold mb-2 dark:text-gray-100">{value.title}</h3>
-      <p className="text-gray-600 dark:text-gray-400 text-base leading-relaxed">{value.description}</p>
-    </motion.div>
-  ))
-}
+           {Object.entries(translations || {})
+            .filter(([, value]) => typeof value === "object" && value !== null)
+            .map(([key, value]) => (
+              <motion.div
+                key={key}
+                whileHover={{ scale: 1.04 }}
+                transition={{ type: "spring", stiffness: 200 }}
+                className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-8 rounded-3xl shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="text-5xl mb-4">{value.icon}</div>
+                <h3 className="text-xl font-semibold mb-2 dark:text-gray-100">{value.title}</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-base leading-relaxed">{value.description}</p>
+              </motion.div>
+            ))
+          }
           </div>
         </div>
       </section>

@@ -73,14 +73,14 @@ const [translations, setTranslations] = useState<Translations | null>(null);
     />
 
       {/* Our Values */}
-      {translations?.OurValues ? (
-      <OurValuesSection
-        sectionTitle={translations.OurValues.sectionTitle}
-        translations={translations.OurValues}
-      />
-    ) : (
-      <p>Loading or no data</p>
-    )}
+           {translations?.OurValues ? (
+           <OurValuesSection
+             sectionTitle={translations.OurValues.title}
+             translations={translations.OurValues}
+           />
+         ) : (
+           <p>Loading or no data</p>
+         )}
 
 
       {/* Our Process */}

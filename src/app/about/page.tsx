@@ -75,7 +75,7 @@ const [translations, setTranslations] = useState<Translations | null>(null);
       {/* Our Values */}
       {translations?.OurValues ? (
       <OurValuesSection
-        sectionTitle={translations.OurValues.sectionTitle}
+        sectionTitle={translations.OurValues.title}
         translations={translations.OurValues}
       />
     ) : (

@@ -72,16 +72,15 @@ const [translations, setTranslations] = useState<Translations | null>(null);
       description={translations?.whoWeAreSection?.description ||"We're a team of forward-thinking developers and designers. We believe technology should serve people—that's why we build clean, modern, accessible web solutions that elevate businesses and ideas."}
     />
 
-      {/* Our Values */}
-      {translations?.OurValues ? (
-      <OurValuesSection
-        sectionTitle={translations.OurValues.sectionTitle}
-        translations={translations.OurValues}
-      />
-    ) : (
-      <p>Loading or no data</p>
-    )}
-
+    {/* Our Values */}
+         {translations?.OurValues ? (
+         <OurValuesSection
+           sectionTitle={translations.OurValues.title}
+           translations={translations.OurValues}
+         />
+       ) : (
+         <p>Loading or no data</p>
+       )}
 
       {/* Our Process */}
       <OurProcessSection

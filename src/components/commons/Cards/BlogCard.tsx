@@ -67,7 +67,7 @@ export default function BlogCard({
 
   return (
     <>
-    <article className="w-full sm:h-[400px] md:h-[450px] rounded-2xl overflow-hidden shadow-lg bg-white dark:bg-gray-900 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+    <article className="w-full sm:h-[400px] md:h-[450px] mb-15 rounded-2xl overflow-hidden shadow-lg bg-white dark:bg-gray-900 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
       <Link href={`/${locale}/blogs/details/${slug}`}>
         <div className="relative group">
           {/* Image with border radius */}

@@ -162,13 +162,16 @@ const menuItems = [
         )}
 
           {/* Dark Mode Toggle */}
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="text-xl text-gray-700 dark:text-gray-200 transition"
-            aria-label="Toggle Dark Mode"
-          >
-            {darkMode ? <FiSun /> : <FiMoon />}
-          </button>
+            <div>
+                <button
+                    onClick={() => setDarkMode(!darkMode)}
+                    className="text-xl text-gray-700 dark:text-gray-200 transition"
+                    aria-label="Toggle Dark Mode"
+                  >
+                    {darkMode ? <FiSun /> : <FiMoon />}
+                  </button>
+            </div>
+      
 
           {/* Mobile Menu Toggle */}
           <div className="md:hidden">
@@ -184,58 +187,58 @@ const menuItems = [
       </div>
 
       {/* Fullscreen mobile menu */}
-   {/* Fullscreen mobile menu */}
-{menuOpen && (
-  <div 
-    className={`fixed top-0 left-0 w-screen h-screen bg-white dark:bg-gray-900 z-[999] flex flex-col items-start justify-start px-6 py-10 overflow-auto shadow-xl transition-transform duration-500 ease-in-out transform ${
-      menuOpen ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
-    }`}
-  >
-    <ul className="flex flex-col gap-6 text-2xl font-semibold text-gray-800 dark:text-white">
-      {menuItems.map((item, index) => (
-        <li key={index}>
-             <Link
-        href={`/${pathLocale ? pathLocale : 'en'}/${item.path}`}
-        onClick={() => setMenuOpen(false)} 
-       className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-      >
-        {item.label}
-      </Link>
-       
-        </li>
-      ))}
-    </ul>
 
-    {/* Mobile Language Dropdown */}
-    <div ref={languageRefMobile} className="flex flex-col gap-6 w-full items-start mt-6">
-      <div className="relative w-full">
-        <button 
-          onClick={() => setLanguageOpenMobile(!languageOpenMobile)} 
-          className="flex items-center gap-2 p-2 border rounded w-full dark:text-white dark:border-gray-600"
+      {menuOpen && (
+        <div 
+          className={`fixed top-0 left-0 w-screen h-screen bg-white dark:bg-gray-900 z-[999] flex flex-col items-start justify-start px-6 py-10 overflow-auto shadow-xl transition-transform duration-500 ease-in-out transform ${
+            menuOpen ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
+          }`}
         >
-          <Image 
-            src={currentLanguage?.flag || "/assets/flags/united-kingdom.png"} // Default flag as fallback 
-            alt={currentLanguage?.name || "English"} 
-            width={24} 
-            height={16} 
-          />
-          {currentLanguage?.name || "English"}
-          <IoMdArrowDropdown />
-        </button>
-        {languageOpenMobile && <LanguageSwitcher setLanguageOpen={setLanguageOpenMobile} />}
-      </div>
-    </div>
+          <ul className="flex flex-col gap-6 text-2xl font-semibold text-gray-800 dark:text-white">
+            {menuItems.map((item, index) => (
+              <li key={index}>
+                  <Link
+              href={`/${pathLocale ? pathLocale : 'en'}/${item.path}`}
+              onClick={() => setMenuOpen(false)} 
+            className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
+              {item.label}
+            </Link>
+            
+              </li>
+            ))}
+          </ul>
 
-    {/* Close Button */}
-    <button 
-      onClick={() => setMenuOpen(false)} 
-      className="absolute top-6 right-6 text-3xl text-gray-700 dark:text-gray-200" 
-      aria-label="Close Menu"
-    >
-      <FiX />
-    </button>
-  </div>
-)}
+          {/* Mobile Language Dropdown */}
+          <div ref={languageRefMobile} className="flex flex-col gap-6 w-full items-start mt-6">
+            <div className="relative w-full">
+              <button 
+                onClick={() => setLanguageOpenMobile(!languageOpenMobile)} 
+                className="flex items-center gap-2 p-2 border rounded w-full dark:text-white dark:border-gray-600"
+              >
+                <Image 
+                  src={currentLanguage?.flag || "/assets/flags/united-kingdom.png"} // Default flag as fallback 
+                  alt={currentLanguage?.name || "English"} 
+                  width={24} 
+                  height={16} 
+                />
+                {currentLanguage?.name || "English"}
+                <IoMdArrowDropdown />
+              </button>
+              {languageOpenMobile && <LanguageSwitcher setLanguageOpen={setLanguageOpenMobile} />}
+            </div>
+          </div>
+
+          {/* Close Button */}
+          <button 
+            onClick={() => setMenuOpen(false)} 
+            className="absolute top-6 right-6 text-3xl text-gray-700 dark:text-gray-200" 
+            aria-label="Close Menu"
+          >
+            <FiX />
+          </button>
+        </div>
+      )}
 
     </nav>
   );

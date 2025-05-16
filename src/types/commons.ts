@@ -72,11 +72,11 @@ export interface ValueItem {
 }
 
 export interface OurValues {
-  [key: string]: ValueItem;
+  [key: string]: ValueItem | string;
 }
 
 export interface OurValuesSectionContent {
-  sectionTitle: string; // used for the heading
+  title: string; // used for the heading
   OurValues: OurValues;
 }
 

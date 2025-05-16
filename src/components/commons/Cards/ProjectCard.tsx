@@ -21,7 +21,7 @@ interface ProjectCardProps {
 
 export default function ProjectCard({ cover, translations, tags }: ProjectCardProps) {
   return (
-    <div className="w-full sm:h-[340px] md:h-[400px] bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col h-full">
+    <div className="w-full sm:h-[340px] md:h-[400px] mb-15 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col h-full">
       {/* Image */}
       <div className="relative h-56 w-full">
         <Image src={cover} alt={translations.title} layout="fill" objectFit="cover" />

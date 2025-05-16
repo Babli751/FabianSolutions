@@ -85,7 +85,7 @@ export default function LatestBlogsSection() {
             >
             {latestBlogs.map((blog, index) => (
                <SwiperSlide key={index}>
-                <div className="mb-6 mt-2 h-full">
+                <div className="mt-2 h-full">
                     <BlogCard
                     id={blog.id}
                     title={blog.translations[pathLocale]?.title || blog.translations['en']?.title}
