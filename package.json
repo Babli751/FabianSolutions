@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postbuild": "next-sitemap"
+    "postbuild": "next-sitemap && cp -r public .next/standalone/public && cp -r .next/static .next/standalone/.next/static"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
