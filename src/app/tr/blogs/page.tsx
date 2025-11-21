@@ -1,4 +1,4 @@
-// src/app/tr/blogs/page.tsx
+// src/app/blogs/page.tsx
 
 
 "use client";
@@ -60,32 +60,42 @@ export default function BlogPage() {
   return (
     <>
          {/* 🌟 Hero Section */}
-     <section className="max-w-6xl mt-30 mx-auto">
-            <h1 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-6">
-                { translations?.ourBlogs || "Our Blogs"}
-
+     <section className="py-32 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden" style={{
+        backgroundImage: `url('https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2072&q=80')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/60 via-purple-900/50 to-indigo-900/60"></div>
+        <div className="relative max-w-6xl mx-auto px-6">
+          <div className="text-center">
+            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+              {translations?.ourBlogs || "Our Blogs"}
             </h1>
-            <p className="text-center text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-12">
-                {translations?.blogSubtitle ||
-                "Stay updated with the latest trends, tips, and insights from our team."}       
+            <p className="text-xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
+              {translations?.blogSubtitle ||
+              "Stay updated with the latest trends, tips, and insights from our team."}       
             </p>
+          </div>
+        </div>
       </section>
 
       {/* 📰 Blog Grid */}
-      <section className="max-w-6xl mx-auto px-6 mt-16 mb-20">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogs.map((blog, index) => (
-        <BlogCard
-          key={index}
-          id={blog.id}
-          title={blog.translations[pathLocale]?.title || blog.translations['en']?.title}
-          excerpt={blog.translations[pathLocale]?.excerpt || blog.translations['en']?.excerpt}
-          image={blog.cover}
-          slug={blog.slug}
-          locale={pathLocale}
-        />
-
-          ))}
+      <section className="py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {blogs.map((blog, index) => (
+              <BlogCard
+                key={index}
+                id={blog.id}
+                title={blog.translations[pathLocale]?.title || blog.translations['en']?.title}
+                excerpt={blog.translations[pathLocale]?.excerpt || blog.translations['en']?.excerpt}
+                image={blog.cover}
+                slug={blog.slug}
+                locale={pathLocale}
+              />
+            ))}
+          </div>
         </div>
       </section>
 

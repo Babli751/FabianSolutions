@@ -1,4 +1,4 @@
-// src/app/en/services/page.tsx
+// src/app/services/page.tsx
 
 "use client";
 import { useEffect, useState } from "react";
@@ -84,25 +84,34 @@ export default function ServicesPage() {
 
   return (
    <>
-      <section className="max-w-6xl mt-30 mx-auto">
-        <h1 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-6">
-            { commonTranslations?.ServicesPage?.heroSection?.title || 'Our Services'}
+      {/* Hero Section */}
+      <section className="py-32 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden" style={{
+        backgroundImage: `url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2015&q=80')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/60 via-purple-900/50 to-indigo-900/60"></div>
+        <div className="relative max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+              {commonTranslations?.ServicesPage?.heroSection?.title || 'Our Services'}
+            </h1>
+            <p className="text-xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
+              {commonTranslations?.ServicesPage?.heroSection?.content || 'We offer tailored digital solutions to bring your ideas to life and help your business grow.'}
+            </p>
+          </div>
 
-        </h1>
-        <p className="text-center text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-12">
-             { commonTranslations?.ServicesPage?.heroSection?.content || 'We offer tailored digital solutions to bring your ideas to life and help your business grow.'}
-       
-        </p>
-
-        <div className="grid grid-cols-1 mb-10 md:grid-cols-2 lg:grid-cols-3 gap-8">
-         {services.map((service, index) => (
-                      <ServiceCard
-                        key={index}
-                        icon={iconMap[service.title] || <FaCode />} // default icon
-                        title={service.title}
-                        description={service.description}
-                      />
-                    ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {services.map((service, index) => (
+              <ServiceCard
+                key={index}
+                icon={iconMap[service.title] || <FaCode />} // default icon
+                title={service.title}
+                description={service.description}
+              />
+            ))}
+          </div>
         </div>
       </section> 
 

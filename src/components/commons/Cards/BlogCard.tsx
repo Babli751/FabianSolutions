@@ -67,37 +67,38 @@ export default function BlogCard({
 
   return (
     <>
-    <article className="w-full sm:h-[400px] md:h-[450px] mb-15 rounded-2xl overflow-hidden shadow-lg bg-white dark:bg-gray-900 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+    <article className="feature-card group">
       <Link href={`/${locale}/blogs/details/${slug}`}>
-        <div className="relative group">
+        <div className="relative group overflow-hidden rounded-t-2xl">
           {/* Image with border radius */}
           <Image
             src={image}
             alt={title + "-" + id}
-            className="w-full h-52 object-cover rounded-t-xl transition-transform duration-500 group-hover:scale-110"
+            className="w-full h-52 object-cover transition-transform duration-500 group-hover:scale-110"
             width={500}
             height={500}
             loading="lazy"
           />
           {/* Gradient overlay for a more modern feel */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent group-hover:bg-gradient-to-t group-hover:from-black group-hover:via-transparent group-hover:to-black opacity-30 transition duration-300" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent group-hover:from-black/30 transition duration-300" />
         </div>
       </Link>
       <div className="p-6 space-y-4">
         {/* Title with larger font-size and text-shadow for a more impactful look */}
-        <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2 line-clamp-2 transition-colors duration-300 hover:text-yellow-500">
+        <h2 className="text-xl font-bold text-slate-800 mb-3 line-clamp-2 transition-colors duration-300 group-hover:text-blue-600">
           {title}
         </h2>
         {/* Excerpt with a little more space */}
-        <p className="text-gray-600 dark:text-gray-400 line-clamp-3 mb-4 text-lg">
+        <p className="text-slate-600 line-clamp-3 mb-4 leading-relaxed">
           {excerpt}
         </p>
         {/* Read more button with better styling */}
         <Link
           href={`/${locale}/blogs/details/${slug}`}
-          className="inline-block text-sm text-blue-600 hover:text-blue-500 font-semibold border-b-2 border-transparent hover:border-blue-500 transition-colors duration-300"
+          className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-300 group-hover:gap-2"
         >
-      {translations?.readMore || 'Read more'} →
+          {translations?.readMore || 'Read more'} 
+          <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
         </Link>
       </div>
     </article>

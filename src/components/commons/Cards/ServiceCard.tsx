@@ -8,12 +8,12 @@ type ServiceCardProps = {
 export default function ServiceCard({ title, description, icon }: ServiceCardProps) {
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow p-6 text-center hover:shadow-lg transition">
-      <div className="text-indigo-600 dark:text-indigo-400 text-4xl mb-4 bg-gray-100 dark:bg-gray-700 w-14 h-14 mx-auto rounded-full flex items-center justify-center">
+    <div className="feature-card group">
+      <div className="text-blue-600 text-4xl mb-6 bg-gradient-to-br from-blue-50 to-indigo-100 w-16 h-16 mx-auto rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
         {icon}
       </div>
-      <h3 className="text-xl text-gray-900 dark:text-gray-100 font-semibold mb-2">{title}</h3>
-      <p className="text-gray-600 dark:text-gray-400">{description}</p>
+      <h3 className="text-xl text-slate-800 font-bold mb-4 group-hover:text-blue-600 transition-colors duration-300">{title}</h3>
+      <p className="text-slate-600 leading-relaxed">{description}</p>
     </div>
   );
 }

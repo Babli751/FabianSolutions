@@ -1,4 +1,4 @@
-// src/app/tr/page.tsx
+// src/app/home/page.tsx
 "use client";
 import { useEffect, useState } from "react";
 import Hero from '@/components/base/Hero';
@@ -10,12 +10,11 @@ import { fetchAboutPageContent } from "@/services/AboutService";
 import { usePathname } from "next/navigation";
 import NotificationModal from "@/components/commons/Modals/NotificationModal";
 import TechnologiesSection from "@/components/commons/Sections/TechnologiesSection";
-import TeamSection from "@/components/commons/Sections/TeamSection";
+// import TeamSection from "@/components/commons/Sections/TeamSection";
 import CallToActionSection from "@/components/commons/Sections/CallToActionSection";
 import LatestBlogsSection from "@/components/commons/Sections/LatestBlogsSection";
 import ProjectsSection from "@/components/commons/Sections/ProjectsSection";
 import { CommontContext, Translations, Services } from "@/types/commons";
-
 import {
   FaCode,
   FaMobileAlt,
@@ -25,22 +24,20 @@ import {
   FaPlug,
   FaShoppingCart,
   FaTools,
-  FaCloudUploadAlt,
   FaPalette
 } from "react-icons/fa";
- 
+
 
 const iconMap: Record<string, React.ReactElement> = {
-  "Web Geliştirme": <FaCode />,
-  "Mobil Uygulamalar": <FaMobileAlt />,
-  "UUI/UX TasarımıI": <FaPaintBrush />,
-  "SMM (Sosyal Medya Pazarlaması)": <FaBullhorn />,
-  "SEO OptimizasyonuSE": <FaSearch />,
-  "API Geliştirme": <FaPlug />,
-  "E-ticaret Çözümleri": <FaShoppingCart />,
-  "Bakım ve Destek": <FaTools />,
-  "Hosting & Deployment": <FaCloudUploadAlt />,
-  "Markalaşma ve Kimlik": <FaPalette />,
+  "Web Development": <FaCode />,
+  "Mobile Apps": <FaMobileAlt />,
+  "UI/UX Design": <FaPaintBrush />,
+  "SMM (Social Media Marketing)": <FaBullhorn />,
+  "SEO Optimization": <FaSearch />,
+  "API Development": <FaPlug />,
+  "E-commerce Solutions": <FaShoppingCart />,
+  "Maintenance & Support": <FaTools />,
+  "Branding & Identity": <FaPalette />,
 };
 
 export default function Home() {
@@ -85,10 +82,17 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <section id="services" className="py-16 bg-gray-50 dark:bg-gray-950">
+      <section id="services" className="py-20 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <div className="container mx-auto px-6 lg:px-12 max-w-7xl">
-          <h2 className="text-3xl font-bold text-center mb-12 dark:text-gray-400">{ translations?.ourServices|| 'Our Services'}</h2>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-800 mb-4">
+              {translations?.ourServices || 'Our Services'}
+            </h2>
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+              Comprehensive digital solutions tailored to your business needs
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((service, index) => (
               <ServiceCard
                 key={index}
@@ -115,11 +119,11 @@ export default function Home() {
     />
 
       {/* Team Section */}
-      <TeamSection 
+      {/* <TeamSection 
       title={aboutTranslations?.TeamSection?.title || "Meet Our Team"}
       description={aboutTranslations?.TeamSection?.description || "A collective of specialists dedicated to digital excellence."}
       specialists={aboutTranslations?.TeamSection?.specialists || {}}
-      />
+      /> */}
       
 
       {/* Call to Action */}

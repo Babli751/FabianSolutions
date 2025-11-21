@@ -58,18 +58,18 @@ export default function TechnologiesSection({ title, description }: Technologies
   return (
     <>
       {/* Technologies */}
-      <section className="relative py-24 px-6 lg:px-32 bg-gradient-to-br from-gray-50 to-indigo-50 dark:from-gray-900 dark:to-gray-950">
+      <section className="relative py-24 px-6 lg:px-32 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         <div className="text-center mb-16">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white"
+            className="text-4xl md:text-5xl font-bold text-slate-800"
           >
             {title}
           </motion.h2>
-          <p className="mt-4 text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="mt-4 text-xl text-slate-600 max-w-3xl mx-auto">
             {description}
           </p>
         </div>
@@ -84,7 +84,7 @@ export default function TechnologiesSection({ title, description }: Technologies
               transition={{ delay: index * 0.1, duration: 0.4, type: "spring" }}
               className="relative group"
             >
-              <div className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-white/70 dark:bg-gray-800/60 backdrop-blur-md shadow-md border border-white/20 dark:border-gray-700 text-sm font-semibold text-gray-800 dark:text-white transition-transform transform-gpu hover:scale-105 hover:shadow-lg cursor-default">
+              <div className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-white/90 backdrop-blur-md shadow-lg border border-slate-200 text-sm font-semibold text-slate-800 transition-all duration-300 transform-gpu hover:scale-105 hover:shadow-xl hover:bg-white cursor-default">
                 {icon}
                 <span>{name}</span>
               </div>

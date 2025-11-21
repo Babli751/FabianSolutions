@@ -1,4 +1,4 @@
-// src/app/en/contact/page.tsx
+// src/app/contact/page.tsx
 "use client";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
@@ -52,27 +52,44 @@ export default function ContactPage() {
 
   return (
     <>
-     <section className="min-h-screen flex flex-col justify-center items-center bg-white px-6 py-20 max-w-4xl mx-auto dark:bg-gray-900">
-      <h1 className="text-4xl font-semibold text-gray-900 mb-16 dark:text-gray-200">{ translations?.contactUs || "Contact Us" }</h1>
+     <section className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 px-6 py-32 relative overflow-hidden" style={{
+        backgroundImage: `url('https://images.unsplash.com/photo-1423666639041-f56000c27a9a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2074&q=80')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/60 via-purple-900/50 to-indigo-900/60"></div>
+        <div className="relative max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+              {translations?.contactUs || "Contact Us"}
+            </h1>
+            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
+              Get in touch with us to discuss your project and bring your ideas to life
+            </p>
+          </div>
 
-      <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-12 text-gray-700 dark:text-gray-300">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-slate-700">
 
-        {/* E-posta */}
-        <ContactCard icon={<FaEnvelope />} label={`${ translations?.Email || "E-mail" }`} value="hello@fabiantech.solutions" href="mailto:hello@fabiantech.solutions" />
+            {/* E-posta */}
+            <ContactCard icon={<FaEnvelope />} label={`${translations?.Email || "E-mail"}`} value="javanshir.m@mail.ru" href="mailto:javanshir.m@mail.ru" />
 
-        {/* Telefon */}
-        <ContactCard icon={<FaPhone />} label={`${ translations?.Phone || "Phone" }`} value="+48 (788) 318 848" href="tel:+48788318848" />
+            {/* Telefon */}
+            <ContactCard icon={<FaPhone />} label={`${translations?.Phone || "Phone"}`} value="+48 (788) 318 848" href="tel:+48788318848" />
 
-    
-
-        {/* Sosyal Medya */}
-        <div className="flex flex-col space-y-4 sm:col-span-2">
-          <p className="font-semibold text-gray-900 mb-2 dark:text-gray-200">{ translations?.follow_us || "Follow Us" }</p>
-          <div className="flex space-x-6 text-gray-600 text-2xl dark:text-gray-400">
-            <SocialIcon href="https://www.instagram.com/fabianacademy2024?igsh=MXF3djI0Z3hib2I2aw%3D%3D" ariaLabel="Instagram"><FaInstagram /></SocialIcon>
-            <SocialIcon href="https://twitter.com/" ariaLabel="Twitter"><FaTwitter /></SocialIcon>
-            <SocialIcon href="https://linkedin.com/" ariaLabel="LinkedIn"><FaLinkedin /></SocialIcon>
-            <SocialIcon href="https://facebook.com/" ariaLabel="Facebook"><FaFacebook /></SocialIcon>
+            {/* Sosyal Medya */}
+            <div className="flex flex-col space-y-6 sm:col-span-2">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-slate-800 mb-6">{translations?.follow_us || "Follow Us"}</p>
+                <div className="flex justify-center space-x-8 text-slate-600 text-3xl">
+                  <SocialIcon href="https://www.instagram.com/fabianacademy2024?igsh=MXF3djI0Z3hib2I2aw%3D%3D" ariaLabel="Instagram"><FaInstagram /></SocialIcon>
+                  <SocialIcon href="https://twitter.com/" ariaLabel="Twitter"><FaTwitter /></SocialIcon>
+                  <SocialIcon href="https://linkedin.com/" ariaLabel="LinkedIn"><FaLinkedin /></SocialIcon>
+                  <SocialIcon href="https://facebook.com/" ariaLabel="Facebook"><FaFacebook /></SocialIcon>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -93,16 +110,18 @@ export default function ContactPage() {
 
 function ContactCard({ icon, label, value, href }: { icon: React.ReactNode; label: string; value: string; href?: string }) {
   return (
-    <div className="flex items-center space-x-4 border-b border-gray-200 pb-4 last:border-none dark:border-gray-700">
-      <div className="text-indigo-600 text-3xl">{icon}</div>
+    <div className="flex items-center space-x-6 p-6 bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl hover:shadow-lg transition-all duration-300 group">
+      <div className="text-blue-600 text-4xl bg-white p-4 rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300">
+        {icon}
+      </div>
       <div>
-        <p className="text-sm uppercase tracking-wide font-medium text-gray-500 dark:text-gray-400">{label}</p>
+        <p className="text-sm uppercase tracking-wide font-semibold text-slate-500 mb-1">{label}</p>
         {href ? (
-          <a href={href} className="text-lg font-semibold text-gray-900 hover:text-indigo-600 transition dark:text-gray-300 hover:dark:text-indigo-400">
+          <a href={href} className="text-lg font-bold text-slate-800 hover:text-blue-600 transition-colors duration-300">
             {value}
           </a>
         ) : (
-          <p className="text-lg font-semibold text-gray-900 dark:text-gray-300">{value}</p>
+          <p className="text-lg font-bold text-slate-800">{value}</p>
         )}
       </div>
     </div>
@@ -116,7 +135,7 @@ function SocialIcon({ href, ariaLabel, children }: { href: string; ariaLabel: st
       aria-label={ariaLabel}
       target="_blank"
       rel="noopener noreferrer"
-      className="hover:text-indigo-600 transition dark:hover:text-indigo-400"
+      className="text-slate-600 hover:text-blue-600 transition-all duration-300 transform hover:scale-125 hover:-translate-y-1"
     >
       {children}
     </a>

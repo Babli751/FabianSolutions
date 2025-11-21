@@ -84,7 +84,7 @@ export default function Hero() {
 
   return (
     <section className="relative h-[85vh] w-full overflow-hidden">
-      {/* Background Image */}
+      {/* Background Image with Modern Overlay */}
       <div
         className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
         style={{
@@ -92,51 +92,64 @@ export default function Hero() {
         }}
       />
 
-      {/* Black Overlay */}
-      <div className="absolute inset-0 bg-black/60 z-10" />
+      {/* Modern Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/80 via-purple-900/70 to-indigo-900/80 z-10" />
 
       {/* Content */}
       <div className="relative z-20 flex flex-col items-center justify-center h-full text-white px-6 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4 animate-fade-in">
-          {slides[current].title}
-        </h1>
-        <p className="text-lg md:text-xl mb-6 animate-fade-in delay-100">
-          {slides[current].text}
-        </p>
-        <a
-          href="#services"
-          className="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold hover:bg-gray-100 transition"
-        >
-          {buttonText}
-        </a>
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
+            {slides[current].title}
+          </h1>
+          <p className="text-xl md:text-2xl mb-8 animate-fade-in delay-100 text-blue-100 max-w-3xl mx-auto leading-relaxed">
+            {slides[current].text}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in delay-200">
+            <a
+              href="#services"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-2xl shadow-lg"
+            >
+              {buttonText}
+            </a>
+            <a
+              href="#contact"
+              className="bg-white/20 backdrop-blur-sm text-white border-2 border-white/30 px-8 py-4 rounded-xl font-semibold hover:bg-white/30 hover:border-white/50 transition-all duration-300 transform hover:-translate-y-1"
+            >
+              Get Started
+            </a>
+          </div>
+        </div>
       </div>
 
-      {/* Arrows */}
+      {/* Modern Arrows */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 z-30 text-white text-2xl md:text-3xl p-3 bg-black/40 hover:bg-black/60 rounded-full"
+        className="absolute left-6 top-1/2 transform -translate-y-1/2 z-30 text-white text-2xl md:text-3xl p-4 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-full transition-all duration-300 hover:scale-110 shadow-lg"
         aria-label="Previous Slide"
       >
         <FaChevronLeft />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 text-white text-2xl md:text-3xl p-3 bg-black/40 hover:bg-black/60 rounded-full"
+        className="absolute right-6 top-1/2 transform -translate-y-1/2 z-30 text-white text-2xl md:text-3xl p-4 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-full transition-all duration-300 hover:scale-110 shadow-lg"
         aria-label="Next Slide"
       >
         <FaChevronRight />
       </button>
 
-      {/* Dots */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-30">
+      {/* Modern Dots */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-30">
         {slides.map((_, index) => (
-          <span
+          <button
             key={index}
             onClick={() => setCurrent(index)}
-            className={`w-3 h-3 rounded-full cursor-pointer transition-all duration-300 ${
-              index === current ? "bg-white" : "bg-white/40"
+            className={`w-4 h-4 rounded-full cursor-pointer transition-all duration-300 shadow-lg ${
+              index === current 
+                ? "bg-white scale-125 shadow-xl" 
+                : "bg-white/40 hover:bg-white/60 hover:scale-110"
             }`}
-          ></span>
+            aria-label={`Go to slide ${index + 1}`}
+          ></button>
         ))}
       </div>
     </section>

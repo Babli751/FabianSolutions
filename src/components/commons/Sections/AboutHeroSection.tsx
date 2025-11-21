@@ -11,7 +11,13 @@ export default function AboutHeroSection({ title, description, cta }: HeroSectio
   return (
     <>
       {/* Hero */}
-      <section className="relative py-28 text-center bg-gradient-to-r from-indigo-600 to-purple-700 text-white overflow-hidden dark:bg-gray-950">
+      <section className="relative py-32 text-center bg-gradient-to-r from-indigo-600 to-purple-700 text-white overflow-hidden" style={{
+        backgroundImage: `url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/70 via-purple-900/60 to-indigo-900/70"></div>
         {/* Decorative background blobs or waves */}
         <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
           <div className="absolute w-72 h-72 bg-white/10 rounded-full top-10 left-10 blur-3xl animate-pulse"></div>
@@ -24,10 +30,10 @@ export default function AboutHeroSection({ title, description, cta }: HeroSectio
           transition={{ duration: 0.8, ease: 'easeOut' }}
           className="relative z-10 px-6"
         >
-          <h1 className="text-5xl md:text-6xl font-extrabold mb-6 tracking-tight dark:text-gray-200">
+          <h1 className="text-5xl md:text-6xl font-extrabold mb-6 tracking-tight text-white">
            {title}
           </h1>
-          <p className="max-w-2xl mx-auto text-lg md:text-xl text-white/90 dark:text-gray-400">
+          <p className="max-w-2xl mx-auto text-lg md:text-xl text-white/90">
            {description}
           </p>
 

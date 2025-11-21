@@ -1,5 +1,6 @@
 // src/app/[locale]/blogs/details/[slug]/page.tsx
 
+
 "use client";
 import { useEffect, useState, useCallback } from "react";
 

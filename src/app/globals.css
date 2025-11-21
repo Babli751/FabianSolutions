@@ -19,3 +19,137 @@
     --foreground: #ededed;
   }
 }
+
+/* LeadGen Styles */
+:root {
+  /* Modern Light Theme Colors for LeadGen */
+  --background-primary: #ffffff;
+  --background-secondary: #f8fafc;
+  --background-tertiary: #f1f5f9;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --accent-primary: #3b82f6;
+  --accent-secondary: #1d4ed8;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --border: #e2e8f0;
+  --border-light: #cbd5e1;
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+/* Custom button styles for LeadGen */
+.btn-primary {
+  background: var(--gradient-primary);
+  @apply text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300;
+}
+
+.btn-secondary {
+  @apply bg-white border-2 border-slate-200 text-slate-700 font-semibold py-3 px-6 rounded-xl shadow-md hover:shadow-lg hover:border-slate-300 transform hover:-translate-y-0.5 transition-all duration-300;
+}
+
+.btn-success {
+  background: var(--gradient-success);
+  @apply text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300;
+}
+
+.btn-warning {
+  @apply bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300;
+}
+
+.btn-danger {
+  @apply bg-gradient-to-r from-red-500 to-pink-500 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300;
+}
+
+/* Card styles for LeadGen */
+.card {
+  @apply bg-white border border-slate-200 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300;
+}
+
+.card-header {
+  @apply bg-gradient-to-r from-slate-50 to-slate-100 px-8 py-6 border-b border-slate-200 rounded-t-2xl;
+}
+
+.card-body {
+  @apply p-8;
+}
+
+/* Form styles for LeadGen */
+.form-input {
+  @apply bg-white border-2 border-slate-200 text-slate-800 placeholder-slate-400 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md;
+}
+
+.form-label {
+  @apply block text-sm font-semibold text-slate-700 mb-3;
+}
+
+/* Status badges for LeadGen */
+.status-success {
+  @apply bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm;
+}
+
+.status-warning {
+  @apply bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm;
+}
+
+.status-error {
+  @apply bg-gradient-to-r from-red-100 to-pink-100 text-red-800 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm;
+}
+
+.status-info {
+  @apply bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm;
+}
+
+/* Hero section styles */
+.hero-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.hero-pattern {
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+}
+
+/* Feature card styles */
+.feature-card {
+  @apply bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-slate-100;
+}
+
+/* Icon styles */
+.icon-gradient {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Responsive improvements for LeadGen */
+@layer utilities {
+  /* Better mobile table styles */
+  .mobile-table-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) var(--background-secondary);
+  }
+
+  .mobile-table-scroll::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .mobile-table-scroll::-webkit-scrollbar-track {
+    background: var(--background-secondary);
+    border-radius: 3px;
+  }
+
+  .mobile-table-scroll::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+  }
+
+  .mobile-table-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--border-light);
+  }
+}

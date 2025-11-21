@@ -14,6 +14,8 @@ export interface Links {
     Guide: string;
     FAQ: string;
     QuickLinks: string;
+    SignIn: string;
+    SignUp: string;
   }
 
 export interface Services {

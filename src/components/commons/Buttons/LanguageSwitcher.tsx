@@ -34,15 +34,15 @@ const LanguageSwitcher = ({ setLanguageOpen }: { setLanguageOpen: React.Dispatch
   };
 
   return (
-    <div className="absolute bg-white dark:bg-gray-800 shadow-lg rounded-lg p-2 mt-2 w-32">
-   {languages.map((lang) => (
+    <div className="absolute bg-white shadow-xl rounded-xl border border-gray-200 p-2 mt-2 w-40 z-50">
+      {languages.map((lang) => (
         <button
           key={lang.code}
           onClick={() => switchLanguage(lang.code)}
-          className="flex items-center gap-2 w-full text-left px-4 py-2 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-200"
+          className="flex items-center gap-3 w-full text-left px-4 py-3 text-gray-800 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 rounded-lg font-medium"
         >
-          <Image src={lang.flag} alt={lang.name} width={24} height={16} />
-         
+          <Image src={lang.flag} alt={lang.name} width={24} height={16} className="rounded-sm" />
+          <span className="text-sm">{lang.name}</span>
         </button>
       ))}
     </div>

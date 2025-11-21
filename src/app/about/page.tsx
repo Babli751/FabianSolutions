@@ -12,7 +12,7 @@ import WhoWeAreSection from "@/components/commons/Sections/WhoWeAreSection";
 import OurValuesSection from "@/components/commons/Sections/OurValuesSection";
 import OurProcessSection from "@/components/commons/Sections/OurProcessSection";
 import TechnologiesSection from "@/components/commons/Sections/TechnologiesSection";
-import TeamSection from "@/components/commons/Sections/TeamSection";
+// import TeamSection from "@/components/commons/Sections/TeamSection";
 import CallToActionSection from "@/components/commons/Sections/CallToActionSection";
 import { Translations } from "@/types/commons";
 
@@ -101,11 +101,11 @@ const [translations, setTranslations] = useState<Translations | null>(null);
       />
 
         {/* Team Section */}
-        <TeamSection 
+        {/* <TeamSection 
         title={translations?.TeamSection?.title || "Meet Our Team"}
         description={translations?.TeamSection?.description || "A collective of specialists dedicated to digital excellence."}
         specialists={translations?.TeamSection?.specialists || {}}
-        />
+        /> */}
 
       {/* Call to Action */}
       <CallToActionSection
