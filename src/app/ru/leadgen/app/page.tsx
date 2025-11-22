@@ -160,6 +160,15 @@ export default function LeadGenerationAppPage() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [showEmailCampaign, setShowEmailCampaign] = useState(false);
 
+  // Email Configuration State
+  const [emailConfig, setEmailConfig] = useState({
+    email: '',
+    password: '',
+    subject: '',
+    description: ''
+  });
+  const [isAIImproving, setIsAIImproving] = useState(false);
+
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(searchSchema),
     defaultValues: {
@@ -291,9 +300,52 @@ export default function LeadGenerationAppPage() {
     });
   }, [leads, filters]);
 
+  const handleAIImprove = async () => {
+    if (!emailConfig.description.trim()) {
+      alert("Please enter a description first");
+      return;
+    }
+
+    setIsAIImproving(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/ai-improve`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: emailConfig.description,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('AI improvement failed');
+      }
+
+      const result = await response.json();
+      setEmailConfig(prev => ({ ...prev, description: result.improved_text }));
+      alert("Description improved successfully!");
+    } catch (error) {
+      alert("Error occurred while improving description");
+      console.error('Error:', error);
+    } finally {
+      setIsAIImproving(false);
+    }
+  };
+
   const sendEmails = async () => {
     if (selectedLeads.length === 0) {
       alert("Please select at least one lead");
+      return;
+    }
+
+    if (!emailConfig.email || !emailConfig.password) {
+      alert("Please configure your email credentials");
+      return;
+    }
+
+    if (!emailConfig.subject || !emailConfig.description) {
+      alert("Please enter email subject and description");
       return;
     }
 
@@ -306,9 +358,10 @@ export default function LeadGenerationAppPage() {
         },
         body: JSON.stringify({
           lead_ids: selectedLeads,
-          subject: "Business Partnership Proposal",
-          body: `Hello,\n\nWe would like to discuss a potential business partnership with you.\n\nBest regards,\n[Your Company Name]`,
-          sender_email: "your-email@example.com",
+          subject: emailConfig.subject,
+          body: emailConfig.description,
+          sender_email: emailConfig.email,
+          sender_password: emailConfig.password,
         }),
       });
 
@@ -369,23 +422,26 @@ export default function LeadGenerationAppPage() {
 
       <div className="container mx-auto py-8 px-4 -mt-8 relative z-10">
 
-        <div className="card mb-8">
-          <div className="card-header">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-slate-800">{t.searchForBusinesses}</h2>
-                <p className="text-slate-600">{t.findLeads}</p>
+        {/* Two Column Layout: Search + Email Configuration */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+          {/* LEFT: Search Section */}
+          <div className="card">
+            <div className="card-header">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-800">{t.searchForBusinesses}</h2>
+                  <p className="text-sm text-slate-600">{t.findLeads}</p>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="card-body">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="card-body">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
                   <label className="form-label">{t.businessType}</label>
                   <Input
@@ -416,16 +472,14 @@ export default function LeadGenerationAppPage() {
                   />
                   {errors.maxResults && <p className="text-red-500 text-sm mt-2 font-medium">{errors.maxResults.message?.toString()}</p>}
                 </div>
-              </div>
-              <div className="flex justify-center">
-                <Button type="submit" disabled={isLoading} className="btn-primary text-lg px-8 py-4">
+                <Button type="submit" disabled={isLoading} className="btn-primary w-full text-lg py-3">
                   {isLoading ? (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 justify-center">
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       <span>{t.searching}</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 justify-center">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
@@ -433,8 +487,89 @@ export default function LeadGenerationAppPage() {
                     </div>
                   )}
                 </Button>
+              </form>
+            </div>
+          </div>
+
+          {/* RIGHT: Email Configuration Section */}
+          <div className="card">
+            <div className="card-header">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-800">Email Configuration</h2>
+                  <p className="text-sm text-slate-600">Setup your email campaign</p>
+                </div>
               </div>
-            </form>
+            </div>
+            <div className="card-body">
+              <div className="space-y-4">
+                <div>
+                  <label className="form-label">Email (SMTP)</label>
+                  <Input
+                    type="email"
+                    placeholder="your-email@gmail.com"
+                    className="form-input"
+                    value={emailConfig.email}
+                    onChange={(e) => setEmailConfig(prev => ({ ...prev, email: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Email Password</label>
+                  <Input
+                    type="password"
+                    placeholder="Your app password"
+                    className="form-input"
+                    value={emailConfig.password}
+                    onChange={(e) => setEmailConfig(prev => ({ ...prev, password: e.target.value }))}
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Use app password for Gmail/Outlook</p>
+                </div>
+                <div>
+                  <label className="form-label">Email Subject</label>
+                  <Input
+                    type="text"
+                    placeholder="Business Partnership Proposal"
+                    className="form-input"
+                    value={emailConfig.subject}
+                    onChange={(e) => setEmailConfig(prev => ({ ...prev, subject: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Email Description</label>
+                  <textarea
+                    placeholder="Write your message here..."
+                    className="form-input min-h-[120px] resize-none"
+                    value={emailConfig.description}
+                    onChange={(e) => setEmailConfig(prev => ({ ...prev, description: e.target.value }))}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  onClick={handleAIImprove}
+                  disabled={isAIImproving || !emailConfig.description}
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white py-3"
+                >
+                  {isAIImproving ? (
+                    <div className="flex items-center gap-2 justify-center">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>AI Improving...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 justify-center">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <span>✨ AI Improve Description</span>
+                    </div>
+                  )}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
