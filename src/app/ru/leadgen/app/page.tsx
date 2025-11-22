@@ -160,13 +160,17 @@ export default function LeadGenerationAppPage() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [showEmailCampaign, setShowEmailCampaign] = useState(false);
 
-  // Email Configuration State
-  const [emailConfig, setEmailConfig] = useState({
-    email: '',
-    password: '',
-    subject: '',
-    description: ''
-  });
+  // Email Configuration State - Multiple Email Accounts
+  type EmailAccount = {
+    id: number;
+    email: string;
+    password: string;
+  };
+
+  const [emailAccounts, setEmailAccounts] = useState<EmailAccount[]>([]);
+  const [currentEmail, setCurrentEmail] = useState({ email: '', password: '' });
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailDescription, setEmailDescription] = useState('');
   const [isAIImproving, setIsAIImproving] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm({
@@ -300,8 +304,35 @@ export default function LeadGenerationAppPage() {
     });
   }, [leads, filters]);
 
+  const handleAddEmail = () => {
+    if (!currentEmail.email || !currentEmail.password) {
+      alert("Please enter both email and password");
+      return;
+    }
+
+    // Check if email already exists
+    if (emailAccounts.some(acc => acc.email === currentEmail.email)) {
+      alert("This email is already added");
+      return;
+    }
+
+    const newAccount: EmailAccount = {
+      id: Date.now(),
+      email: currentEmail.email,
+      password: currentEmail.password,
+    };
+
+    setEmailAccounts(prev => [...prev, newAccount]);
+    setCurrentEmail({ email: '', password: '' });
+    alert(`Email account added successfully! Total accounts: ${emailAccounts.length + 1}`);
+  };
+
+  const handleRemoveEmail = (id: number) => {
+    setEmailAccounts(prev => prev.filter(acc => acc.id !== id));
+  };
+
   const handleAIImprove = async () => {
-    if (!emailConfig.description.trim()) {
+    if (!emailDescription.trim()) {
       alert("Please enter a description first");
       return;
     }
@@ -314,7 +345,7 @@ export default function LeadGenerationAppPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          text: emailConfig.description,
+          text: emailDescription,
         }),
       });
 
@@ -323,7 +354,7 @@ export default function LeadGenerationAppPage() {
       }
 
       const result = await response.json();
-      setEmailConfig(prev => ({ ...prev, description: result.improved_text }));
+      setEmailDescription(result.improved_text);
       alert("Description improved successfully!");
     } catch (error) {
       alert("Error occurred while improving description");
@@ -339,12 +370,12 @@ export default function LeadGenerationAppPage() {
       return;
     }
 
-    if (!emailConfig.email || !emailConfig.password) {
-      alert("Please configure your email credentials");
+    if (emailAccounts.length === 0) {
+      alert("Please add at least one email account");
       return;
     }
 
-    if (!emailConfig.subject || !emailConfig.description) {
+    if (!emailSubject || !emailDescription) {
       alert("Please enter email subject and description");
       return;
     }
@@ -358,10 +389,12 @@ export default function LeadGenerationAppPage() {
         },
         body: JSON.stringify({
           lead_ids: selectedLeads,
-          subject: emailConfig.subject,
-          body: emailConfig.description,
-          sender_email: emailConfig.email,
-          sender_password: emailConfig.password,
+          subject: emailSubject,
+          body: emailDescription,
+          email_accounts: emailAccounts.map(acc => ({
+            email: acc.email,
+            password: acc.password
+          })),
         }),
       });
 
@@ -508,66 +541,118 @@ export default function LeadGenerationAppPage() {
             </div>
             <div className="card-body">
               <div className="space-y-4">
-                <div>
-                  <label className="form-label">Email (SMTP)</label>
-                  <Input
-                    type="email"
-                    placeholder="your-email@gmail.com"
-                    className="form-input"
-                    value={emailConfig.email}
-                    onChange={(e) => setEmailConfig(prev => ({ ...prev, email: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label className="form-label">Email Password</label>
-                  <Input
-                    type="password"
-                    placeholder="Your app password"
-                    className="form-input"
-                    value={emailConfig.password}
-                    onChange={(e) => setEmailConfig(prev => ({ ...prev, password: e.target.value }))}
-                  />
-                  <p className="text-xs text-slate-500 mt-1">Use app password for Gmail/Outlook</p>
-                </div>
-                <div>
-                  <label className="form-label">Email Subject</label>
-                  <Input
-                    type="text"
-                    placeholder="Business Partnership Proposal"
-                    className="form-input"
-                    value={emailConfig.subject}
-                    onChange={(e) => setEmailConfig(prev => ({ ...prev, subject: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label className="form-label">Email Description</label>
-                  <textarea
-                    placeholder="Write your message here..."
-                    className="form-input min-h-[120px] resize-none"
-                    value={emailConfig.description}
-                    onChange={(e) => setEmailConfig(prev => ({ ...prev, description: e.target.value }))}
-                  />
-                </div>
-                <Button
-                  type="button"
-                  onClick={handleAIImprove}
-                  disabled={isAIImproving || !emailConfig.description}
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white py-3"
-                >
-                  {isAIImproving ? (
-                    <div className="flex items-center gap-2 justify-center">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>AI Improving...</span>
+                {/* Info Alert */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="flex gap-2">
+                    <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div className="text-xs text-blue-800">
+                      <p className="font-semibold mb-1">Why multiple email accounts?</p>
+                      <p>Email providers limit daily sends (Gmail: ~500/day, Outlook: ~300/day). Add multiple accounts to distribute emails and avoid bans. Emails will be sent rotating between your accounts.</p>
                     </div>
-                  ) : (
-                    <div className="flex items-center gap-2 justify-center">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                      <span>✨ AI Improve Description</span>
+                  </div>
+                </div>
+
+                {/* Email Accounts List */}
+                {emailAccounts.length > 0 && (
+                  <div className="space-y-2">
+                    <label className="form-label">Added Email Accounts ({emailAccounts.length})</label>
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {emailAccounts.map((account) => (
+                        <div key={account.id} className="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-lg">
+                          <span className="text-sm text-slate-700 truncate flex-1">{account.email}</span>
+                          <button
+                            onClick={() => handleRemoveEmail(account.id)}
+                            className="ml-2 text-red-600 hover:text-red-700"
+                            title="Remove"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  )}
-                </Button>
+                  </div>
+                )}
+
+                {/* Add New Email */}
+                <div className="border-t pt-4">
+                  <label className="form-label">Add Email Account (SMTP)</label>
+                  <div className="space-y-3">
+                    <Input
+                      type="email"
+                      placeholder="your-email@gmail.com"
+                      className="form-input"
+                      value={currentEmail.email}
+                      onChange={(e) => setCurrentEmail(prev => ({ ...prev, email: e.target.value }))}
+                    />
+                    <Input
+                      type="password"
+                      placeholder="Your app password"
+                      className="form-input"
+                      value={currentEmail.password}
+                      onChange={(e) => setCurrentEmail(prev => ({ ...prev, password: e.target.value }))}
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleAddEmail}
+                      disabled={!currentEmail.email || !currentEmail.password}
+                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2"
+                    >
+                      <div className="flex items-center gap-2 justify-center">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>Add Email Account</span>
+                      </div>
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Email Subject & Description */}
+                <div className="border-t pt-4 space-y-3">
+                  <div>
+                    <label className="form-label">Email Subject</label>
+                    <Input
+                      type="text"
+                      placeholder="Business Partnership Proposal"
+                      className="form-input"
+                      value={emailSubject}
+                      onChange={(e) => setEmailSubject(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">Email Description</label>
+                    <textarea
+                      placeholder="Write your message here..."
+                      className="form-input min-h-[100px] resize-none"
+                      value={emailDescription}
+                      onChange={(e) => setEmailDescription(e.target.value)}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleAIImprove}
+                    disabled={isAIImproving || !emailDescription}
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white py-3"
+                  >
+                    {isAIImproving ? (
+                      <div className="flex items-center gap-2 justify-center">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>AI Improving...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 justify-center">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span>✨ AI Improve Description</span>
+                      </div>
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
