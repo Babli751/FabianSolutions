@@ -19,9 +19,10 @@ app.include_router(email_routes.router, prefix="/api", tags=["emails"])
 @app.get("/")
 async def root():
     return {
-        "message": "FabianTech Lead Generation API",
-        "version": "1.0.0",
-        "status": "online"
+        "message": "FabianTech Lead Generation API v2.0",
+        "version": "2.0.0",
+        "status": "online",
+        "features": ["email_scraping", "progress_tracking", "smtp_sending"]
     }
 
 @app.get("/health")
