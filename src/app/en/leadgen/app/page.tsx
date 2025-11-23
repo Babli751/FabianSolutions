@@ -47,12 +47,14 @@ const translations = {
     phone: "Phone",
     website: "Website",
     address: "Address",
+    googleMapsLink: "Maps",
     status: "Status",
     details: "Details",
     view: "View",
     sent: "Sent",
     new: "New",
-    visitSite: "Visit Site"
+    visitSite: "Visit Site",
+    viewOnMaps: "View on Maps"
   },
   tr: {
     title: "Potansiyel Müşteri Bulma Aracı",
@@ -81,12 +83,14 @@ const translations = {
     phone: "Telefon",
     website: "Web Sitesi",
     address: "Adres",
+    googleMapsLink: "Harita",
     status: "Durum",
     details: "Detaylar",
     view: "Görüntüle",
     sent: "Gönderildi",
     new: "Yeni",
-    visitSite: "Siteyi Ziyaret Et"
+    visitSite: "Siteyi Ziyaret Et",
+    viewOnMaps: "Haritada Görüntüle"
   },
   ru: {
     title: "Инструмент Генерации Лидов",
@@ -115,12 +119,14 @@ const translations = {
     phone: "Телефон",
     website: "Веб-сайт",
     address: "Адрес",
+    googleMapsLink: "Карта",
     status: "Статус",
     details: "Детали",
     view: "Просмотр",
     sent: "Отправлено",
     new: "Новый",
-    visitSite: "Посетить Сайт"
+    visitSite: "Посетить Сайт",
+    viewOnMaps: "Посмотреть на Карте"
   }
 };
 
@@ -130,6 +136,14 @@ const searchSchema = z.object({
   maxResults: z.number().min(5).max(100),
 });
 
+type ScrapedEmail = {
+  email: string;
+  source: string; // Where it was found (e.g., "contact page", "footer", "about page")
+  category: string; // Business category (e.g., "restaurant", "barber", "plumber")
+  scrapedAt: string; // When it was scraped
+  verified: boolean; // Email format verified
+};
+
 type Lead = {
   id: number;
   name: string;
@@ -138,6 +152,9 @@ type Lead = {
   website: string | null;
   address: string;
   status: string;
+  googleMapsUrl: string | null;
+  scrapedEmails: ScrapedEmail[] | null; // Now contains detailed email info
+  businessCategory: string | null; // Main business category
 };
 
 export default function LeadGenerationAppPage() {
@@ -149,6 +166,8 @@ export default function LeadGenerationAppPage() {
   const [selectedLeads, setSelectedLeads] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [sendingProgress, setSendingProgress] = useState({ sent: 0, total: 0 });
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [filters, setFilters] = useState<FilterOptions>({
     hasEmail: false,
     hasPhone: false,
@@ -172,6 +191,9 @@ export default function LeadGenerationAppPage() {
   const [emailSubject, setEmailSubject] = useState('');
   const [emailDescription, setEmailDescription] = useState('');
   const [isAIImproving, setIsAIImproving] = useState(false);
+
+  // Step Management
+  const [currentStep, setCurrentStep] = useState<1 | 2>(1);
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(searchSchema),
@@ -331,6 +353,16 @@ export default function LeadGenerationAppPage() {
     setEmailAccounts(prev => prev.filter(acc => acc.id !== id));
   };
 
+  const handleNextStep = () => {
+    setCurrentStep(2);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePreviousStep = () => {
+    setCurrentStep(1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleAIImprove = async () => {
     if (!emailDescription.trim()) {
       alert("Please enter a description first");
@@ -380,7 +412,11 @@ export default function LeadGenerationAppPage() {
       return;
     }
 
+    const controller = new AbortController();
+    setAbortController(controller);
     setIsSending(true);
+    setSendingProgress({ sent: 0, total: selectedLeads.length });
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/send-emails`, {
         method: 'POST',
@@ -395,7 +431,10 @@ export default function LeadGenerationAppPage() {
             email: acc.email,
             password: acc.password
           })),
+          delay_min: 0.5,
+          delay_max: 5,
         }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -409,11 +448,25 @@ export default function LeadGenerationAppPage() {
       setLeads(prev => prev.map(lead =>
         selectedLeads.includes(lead.id) ? { ...lead, status: "email_sent" } : lead
       ));
+      setSendingProgress({ sent: selectedLeads.length, total: selectedLeads.length });
     } catch (error) {
-      alert("Error occurred while sending email");
-      console.error('Error:', error);
+      if (error instanceof Error && error.name === 'AbortError') {
+        alert("Email sending stopped by user");
+      } else {
+        alert("Error occurred while sending email");
+        console.error('Error:', error);
+      }
     } finally {
       setIsSending(false);
+      setAbortController(null);
+    }
+  };
+
+  const stopSending = () => {
+    if (abortController) {
+      abortController.abort();
+      setIsSending(false);
+      setAbortController(null);
     }
   };
 
@@ -455,77 +508,29 @@ export default function LeadGenerationAppPage() {
 
       <div className="container mx-auto py-8 px-4 -mt-8 relative z-10">
 
-        {/* Two Column Layout: Search + Email Configuration */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-
-          {/* LEFT: Search Section */}
-          <div className="card">
-            <div className="card-header">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-slate-800">{t.searchForBusinesses}</h2>
-                  <p className="text-sm text-slate-600">{t.findLeads}</p>
-                </div>
+        {/* Step Indicator */}
+        <div className="mb-8">
+          <div className="flex items-center justify-center gap-4">
+            <div className={`flex items-center gap-2 ${currentStep === 1 ? 'text-blue-600' : 'text-slate-400'}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${currentStep === 1 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                1
               </div>
+              <span className="hidden sm:block font-semibold">Email Setup</span>
             </div>
-            <div className="card-body">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div>
-                  <label className="form-label">{t.businessType}</label>
-                  <Input
-                    placeholder={t.businessTypePlaceholder}
-                    className="form-input"
-                    {...register("query")}
-                  />
-                  {errors.query && <p className="text-red-500 text-sm mt-2 font-medium">{errors.query.message?.toString()}</p>}
-                </div>
-                <div>
-                  <label className="form-label">{t.location}</label>
-                  <Input
-                    placeholder={t.locationPlaceholder}
-                    className="form-input"
-                    {...register("location")}
-                  />
-                  {errors.location && <p className="text-red-500 text-sm mt-2 font-medium">{errors.location.message?.toString()}</p>}
-                </div>
-                <div>
-                  <label className="form-label">{t.maxResults}</label>
-                  <Input
-                    type="number"
-                    placeholder="20"
-                    min={5}
-                    max={100}
-                    className="form-input"
-                    {...register("maxResults", { valueAsNumber: true })}
-                  />
-                  {errors.maxResults && <p className="text-red-500 text-sm mt-2 font-medium">{errors.maxResults.message?.toString()}</p>}
-                </div>
-                <Button type="submit" disabled={isLoading} className="btn-primary w-full text-lg py-3">
-                  {isLoading ? (
-                    <div className="flex items-center gap-2 justify-center">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>{t.searching}</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 justify-center">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                      <span>{t.startSearch}</span>
-                    </div>
-                  )}
-                </Button>
-              </form>
+            <div className="w-16 h-1 bg-slate-300"></div>
+            <div className={`flex items-center gap-2 ${currentStep === 2 ? 'text-blue-600' : 'text-slate-400'}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${currentStep === 2 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                2
+              </div>
+              <span className="hidden sm:block font-semibold">Search & Send</span>
             </div>
           </div>
+        </div>
 
-          {/* RIGHT: Email Configuration Section */}
-          <div className="card">
+        {/* STEP 1: Email Configuration */}
+        {currentStep === 1 && (
+          <div className="max-w-3xl mx-auto">
+            <div className="card">
             <div className="card-header">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
@@ -548,8 +553,13 @@ export default function LeadGenerationAppPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <div className="text-xs text-blue-800">
-                      <p className="font-semibold mb-1">Why multiple email accounts?</p>
-                      <p>Email providers limit daily sends (Gmail: ~500/day, Outlook: ~300/day). Add multiple accounts to distribute emails and avoid bans. Emails will be sent rotating between your accounts.</p>
+                      <p className="font-semibold mb-1">Anti-Ban Protection</p>
+                      <p>Email providers limit daily sends and you may get banned. We use multiple strategies:</p>
+                      <ul className="list-disc ml-4 mt-1 space-y-0.5">
+                        <li>Multiple accounts to distribute emails</li>
+                        <li>Random delays (0.5-5 seconds) between emails</li>
+                        <li>SMTP protocol - we won&apos;t log into your accounts</li>
+                      </ul>
                     </div>
                   </div>
                 </div>
@@ -625,40 +635,151 @@ export default function LeadGenerationAppPage() {
                   </div>
                   <div>
                     <label className="form-label">Email Description</label>
-                    <textarea
-                      placeholder="Write your message here..."
-                      className="form-input min-h-[100px] resize-none"
-                      value={emailDescription}
-                      onChange={(e) => setEmailDescription(e.target.value)}
-                    />
+                    <div className="relative">
+                      <textarea
+                        placeholder="Write your message here..."
+                        className="form-input min-h-[200px] resize-none w-full pr-32"
+                        value={emailDescription}
+                        onChange={(e) => setEmailDescription(e.target.value)}
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleAIImprove}
+                        disabled={isAIImproving || !emailDescription}
+                        className="absolute bottom-3 right-3 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2.5 text-sm rounded-lg"
+                      >
+                        {isAIImproving ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Improving...</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            <span>AI Improve</span>
+                          </div>
+                        )}
+                      </Button>
+                    </div>
                   </div>
+                </div>
+
+                {/* Next Button */}
+                <div className="border-t pt-4">
                   <Button
                     type="button"
-                    onClick={handleAIImprove}
-                    disabled={isAIImproving || !emailDescription}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white py-3"
+                    onClick={handleNextStep}
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 text-lg font-semibold"
                   >
-                    {isAIImproving ? (
-                      <div className="flex items-center gap-2 justify-center">
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span>AI Improving...</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 justify-center">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        <span>✨ AI Improve Description</span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 justify-center">
+                      <span>Next: Search for Leads</span>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </div>
                   </Button>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        )}
 
-        {leads.length > 0 && (
+        {/* STEP 2: Search & Results */}
+        {currentStep === 2 && (
+          <div>
+            {/* Previous Button */}
+            <div className="mb-4">
+              <Button
+                onClick={handlePreviousStep}
+                variant="outline"
+                className="btn-secondary"
+              >
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span>Back to Email Setup</span>
+                </div>
+              </Button>
+            </div>
+
+            {/* Search Section */}
+            <div className="card mb-8">
+              <div className="card-header">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-800">{t.searchForBusinesses}</h2>
+                    <p className="text-slate-600">{t.findLeads}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="card-body">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div>
+                      <label className="form-label">{t.businessType}</label>
+                      <Input
+                        placeholder={t.businessTypePlaceholder}
+                        className="form-input"
+                        {...register("query")}
+                      />
+                      {errors.query && <p className="text-red-500 text-sm mt-2 font-medium">{errors.query.message?.toString()}</p>}
+                    </div>
+                    <div>
+                      <label className="form-label">{t.location}</label>
+                      <Input
+                        placeholder={t.locationPlaceholder}
+                        className="form-input"
+                        {...register("location")}
+                      />
+                      {errors.location && <p className="text-red-500 text-sm mt-2 font-medium">{errors.location.message?.toString()}</p>}
+                    </div>
+                    <div>
+                      <label className="form-label">{t.maxResults}</label>
+                      <Input
+                        type="number"
+                        placeholder="20"
+                        min={5}
+                        max={100}
+                        className="form-input"
+                        {...register("maxResults", { valueAsNumber: true })}
+                      />
+                      {errors.maxResults && <p className="text-red-500 text-sm mt-2 font-medium">{errors.maxResults.message?.toString()}</p>}
+                    </div>
+                  </div>
+                  <div className="flex justify-center">
+                    <Button type="submit" disabled={isLoading} className="btn-primary text-lg px-8 py-4">
+                      {isLoading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>{t.searching}</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                          <span>{t.startSearch}</span>
+                        </div>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Results Section - Only show in Step 2 */}
+        {currentStep === 2 && leads.length > 0 && (
           <div className="space-y-6">
             <LeadFilters
               onFiltersChange={setFilters}
@@ -682,7 +803,7 @@ export default function LeadGenerationAppPage() {
                       <p className="text-slate-600 mt-1">{t.selectLeads}</p>
                     </div>
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 items-center">
                     <Button
                       onClick={() => setShowEmailCampaign(!showEmailCampaign)}
                       variant="outline"
@@ -690,25 +811,40 @@ export default function LeadGenerationAppPage() {
                     >
                       {showEmailCampaign ? t.hideCampaign : t.emailCampaign}
                     </Button>
-                    <Button
-                      onClick={sendEmails}
-                      disabled={selectedLeads.length === 0 || isSending}
-                      className="btn-success"
-                    >
-                      {isSending ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>{t.sending}</span>
+                    {isSending ? (
+                      <>
+                        <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
+                          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                          <span className="text-sm font-semibold text-blue-800">
+                            Sending: {sendingProgress.sent} / {sendingProgress.total}
+                          </span>
                         </div>
-                      ) : (
+                        <Button
+                          onClick={stopSending}
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                          <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            <span>Stop</span>
+                          </div>
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        onClick={sendEmails}
+                        disabled={selectedLeads.length === 0}
+                        className="btn-success"
+                      >
                         <div className="flex items-center gap-2">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                           </svg>
                           <span>{t.sendEmail} ({selectedLeads.length})</span>
                         </div>
-                      )}
-                    </Button>
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -723,6 +859,7 @@ export default function LeadGenerationAppPage() {
                         <TableHead className="min-w-[120px] bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700 font-semibold">{t.phone}</TableHead>
                         <TableHead className="min-w-[100px] bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700 font-semibold">{t.website}</TableHead>
                         <TableHead className="min-w-[200px] hidden lg:table-cell bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700 font-semibold">{t.address}</TableHead>
+                        <TableHead className="min-w-[100px] bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700 font-semibold">{t.googleMapsLink}</TableHead>
                         <TableHead className="min-w-[100px] bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700 font-semibold">{t.status}</TableHead>
                         <TableHead className="w-16 bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700 font-semibold">{t.details}</TableHead>
                       </TableRow>
@@ -782,6 +919,20 @@ export default function LeadGenerationAppPage() {
                             <span className="truncate block max-w-[180px] text-slate-600" title={lead.address}>
                               {lead.address}
                             </span>
+                          </TableCell>
+                          <TableCell className="border-slate-200">
+                            {lead.googleMapsUrl ? (
+                              <a
+                                href={lead.googleMapsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
+                              >
+                                {t.viewOnMaps}
+                              </a>
+                            ) : (
+                              <span className="text-slate-400">-</span>
+                            )}
                           </TableCell>
                           <TableCell className="border-slate-200">
                             <span className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap font-semibold ${
