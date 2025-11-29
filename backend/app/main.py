@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import email_routes
+from app.api import email_routes, follow_up_routes
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = FastAPI(title="FabianTech Lead Generation API", version="1.0.0")
 
@@ -15,6 +19,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(email_routes.router, prefix="/api", tags=["emails"])
+app.include_router(follow_up_routes.router, prefix="/api", tags=["follow-ups"])
 
 @app.get("/")
 async def root():

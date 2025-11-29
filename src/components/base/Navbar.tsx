@@ -107,9 +107,11 @@ const menuItems = [
   return (
     <nav className="fixed top-0 w-full z-50 backdrop-blur-md bg-white/70 shadow-md">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <h1 className="text-2xl font-extrabold bg-gradient-to-r from-blue-500 to-indigo-600 text-transparent bg-clip-text tracking-tight">
-          FabianTech
-        </h1>
+        <Link href={`/${pathLocale || 'en'}`} className="cursor-pointer">
+          <h1 className="text-2xl font-extrabold bg-gradient-to-r from-blue-500 to-indigo-600 text-transparent bg-clip-text tracking-tight hover:scale-105 transition-transform">
+            FabianTech
+          </h1>
+        </Link>
 
         {/* Desktop Menu */}
         <ul className="hidden md:flex gap-8 font-semibold text-lg">

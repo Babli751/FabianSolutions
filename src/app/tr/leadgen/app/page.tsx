@@ -133,7 +133,7 @@ const translations = {
 const searchSchema = z.object({
   query: z.string().min(2, "Minimum 2 characters required"),
   location: z.string().min(2, "Minimum 2 characters required"),
-  maxResults: z.number().min(5).max(100),
+  maxResults: z.number().min(5),
 });
 
 type ScrapedEmail = {
@@ -179,15 +179,22 @@ export default function LeadGenerationAppPage() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [showEmailCampaign, setShowEmailCampaign] = useState(false);
 
+  // Search Progress State
+  const [searchProgress, setSearchProgress] = useState({ current: 0, total: 0, message: '' });
+
   // Email Configuration State - Multiple Email Accounts
   type EmailAccount = {
     id: number;
     email: string;
     password: string;
+    smtp: string;
+    port: string;
   };
 
   const [emailAccounts, setEmailAccounts] = useState<EmailAccount[]>([]);
-  const [currentEmail, setCurrentEmail] = useState({ email: '', password: '' });
+  const [currentEmail, setCurrentEmail] = useState({ email: '', password: '', smtp: 'smtp.gmail.com', port: '587' });
+  const [testEmail, setTestEmail] = useState('');
+  const [isSendingTest, setIsSendingTest] = useState(false);
   const [emailSubject, setEmailSubject] = useState('');
   const [emailDescription, setEmailDescription] = useState('');
   const [isAIImproving, setIsAIImproving] = useState(false);
@@ -206,8 +213,13 @@ export default function LeadGenerationAppPage() {
 
   const onSubmit = async (data: z.infer<typeof searchSchema>) => {
     setIsLoading(true);
+    setSearchProgress({ current: 0, total: data.maxResults, message: 'Starting search...' });
+
+    let pollingInterval: NodeJS.Timeout | null = null;
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/search`, {
+      // Start polling immediately with the actual search request
+      const responsePromise = fetch(`http://206.189.57.55:8000/api/search`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -215,20 +227,82 @@ export default function LeadGenerationAppPage() {
         body: JSON.stringify(data),
       });
 
+      // Start polling after a short delay to let backend initialize
+      setTimeout(() => {
+        pollingInterval = setInterval(async () => {
+          try {
+            // Try to get progress with a generic search ID pattern
+            const progressResponse = await fetch(`http://206.189.57.55:8000/api/search-progress/search_${Math.floor(Date.now() / 1000)}`);
+            if (progressResponse.ok) {
+              const progress = await progressResponse.json();
+              setSearchProgress({
+                current: progress.current || 0,
+                total: progress.total || data.maxResults,
+                message: progress.message || 'Searching...'
+              });
+            }
+          } catch {
+            // Ignore polling errors
+            console.log('Polling attempt...');
+          }
+        }, 300);
+      }, 200);
+
+      const response = await responsePromise;
+
       if (!response.ok) {
         throw new Error('API request failed');
       }
 
       const result = await response.json();
+
+      // Clear temp polling and start real polling if search_id exists
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+
+      if (result.search_id) {
+        pollSearchProgress(result.search_id);
+      }
+
       setLeads(result.leads || []);
       setSelectedLeads([]);
-      alert(`${result.leads?.length || 0} leads found`);
+      setSearchProgress({ current: result.total || 0, total: result.total || 0, message: `Found ${result.total || 0} businesses` });
     } catch (error) {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
       alert("Error occurred during search");
       console.error('Error:', error);
+      setSearchProgress({ current: 0, total: 0, message: 'Search failed' });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const pollSearchProgress = async (searchId: string) => {
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch(`http://206.189.57.55:8000/api/search-progress/${searchId}`);
+        if (response.ok) {
+          const progress = await response.json();
+          setSearchProgress({
+            current: progress.current || 0,
+            total: progress.total || 0,
+            message: progress.message || ''
+          });
+
+          if (progress.status === 'completed' || progress.status === 'failed') {
+            clearInterval(interval);
+          }
+        }
+      } catch (error) {
+        console.error('Error polling progress:', error);
+      }
+    }, 500); // Poll every 500ms
+
+    // Clean up after 5 minutes
+    setTimeout(() => clearInterval(interval), 300000);
   };
 
   const handleSelectLead = (leadId: number) => {
@@ -237,6 +311,16 @@ export default function LeadGenerationAppPage() {
         ? prev.filter(id => id !== leadId)
         : [...prev, leadId]
     );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedLeads.length === filteredLeads.length) {
+      // Deselect all
+      setSelectedLeads([]);
+    } else {
+      // Select all filtered leads
+      setSelectedLeads(filteredLeads.map(lead => lead.id));
+    }
   };
 
   const handleLeadClick = (lead: Lead) => {
@@ -326,15 +410,13 @@ export default function LeadGenerationAppPage() {
     });
   }, [leads, filters]);
 
-  const handleAddEmail = () => {
-    if (!currentEmail.email || !currentEmail.password) {
-      alert("Please enter both email and password");
-      return;
-    }
+  const handleRemoveEmail = (id: number) => {
+    setEmailAccounts(prev => prev.filter(acc => acc.id !== id));
+  };
 
-    // Check if email already exists
-    if (emailAccounts.some(acc => acc.email === currentEmail.email)) {
-      alert("This email is already added");
+  const handleAddEmail = () => {
+    if (!currentEmail.email || !currentEmail.password || !currentEmail.smtp || !currentEmail.port) {
+      alert("Please fill all SMTP fields");
       return;
     }
 
@@ -342,15 +424,56 @@ export default function LeadGenerationAppPage() {
       id: Date.now(),
       email: currentEmail.email,
       password: currentEmail.password,
+      smtp: currentEmail.smtp,
+      port: currentEmail.port
     };
 
     setEmailAccounts(prev => [...prev, newAccount]);
-    setCurrentEmail({ email: '', password: '' });
-    alert(`Email account added successfully! Total accounts: ${emailAccounts.length + 1}`);
+    setCurrentEmail({ email: '', password: '', smtp: 'smtp.gmail.com', port: '587' });
   };
 
-  const handleRemoveEmail = (id: number) => {
-    setEmailAccounts(prev => prev.filter(acc => acc.id !== id));
+  const handleSendTestEmail = async () => {
+    if (!currentEmail.email || !currentEmail.password || !currentEmail.smtp || !currentEmail.port) {
+      alert("Please fill all SMTP configuration fields first");
+      return;
+    }
+
+    if (!testEmail) {
+      alert("Please enter a test email address");
+      return;
+    }
+
+    setIsSendingTest(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/send-test-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          smtp_config: {
+            email: currentEmail.email,
+            password: currentEmail.password,
+            smtp_server: currentEmail.smtp,
+            port: parseInt(currentEmail.port)
+          },
+          test_email: testEmail
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(`Test email sent successfully to ${testEmail}!`);
+        setTestEmail('');
+      } else {
+        alert(`Failed to send test email: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      alert(`Error sending test email: ${error}`);
+    } finally {
+      setIsSendingTest(false);
+    }
   };
 
   const handleNextStep = () => {
@@ -371,6 +494,9 @@ export default function LeadGenerationAppPage() {
 
     setIsAIImproving(true);
     try {
+      // Get the first email account if available
+      const senderEmail = emailAccounts.length > 0 ? emailAccounts[0].email : currentEmail.email || null;
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/ai-improve`, {
         method: 'POST',
         headers: {
@@ -378,6 +504,7 @@ export default function LeadGenerationAppPage() {
         },
         body: JSON.stringify({
           text: emailDescription,
+          sender_email: senderEmail,
         }),
       });
 
@@ -568,13 +695,18 @@ export default function LeadGenerationAppPage() {
                 {emailAccounts.length > 0 && (
                   <div className="space-y-2">
                     <label className="form-label">Added Email Accounts ({emailAccounts.length})</label>
-                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
                       {emailAccounts.map((account) => (
                         <div key={account.id} className="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-lg">
-                          <span className="text-sm text-slate-700 truncate flex-1">{account.email}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-slate-700 truncate">{account.email}</p>
+                            <p className="text-xs text-slate-500">
+                              {account.smtp}:{account.port}
+                            </p>
+                          </div>
                           <button
                             onClick={() => handleRemoveEmail(account.id)}
-                            className="ml-2 text-red-600 hover:text-red-700"
+                            className="ml-2 text-red-600 hover:text-red-700 flex-shrink-0"
                             title="Remove"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -587,37 +719,119 @@ export default function LeadGenerationAppPage() {
                   </div>
                 )}
 
-                {/* Add New Email */}
+                {/* Gmail OAuth */}
                 <div className="border-t pt-4">
-                  <label className="form-label">Add Email Account (SMTP)</label>
+                  <label className="form-label">Email Account (Gmail OAuth)</label>
                   <div className="space-y-3">
-                    <Input
-                      type="email"
-                      placeholder="your-email@gmail.com"
-                      className="form-input"
-                      value={currentEmail.email}
-                      onChange={(e) => setCurrentEmail(prev => ({ ...prev, email: e.target.value }))}
-                    />
-                    <Input
-                      type="password"
-                      placeholder="Your app password"
-                      className="form-input"
-                      value={currentEmail.password}
-                      onChange={(e) => setCurrentEmail(prev => ({ ...prev, password: e.target.value }))}
-                    />
                     <Button
                       type="button"
-                      onClick={handleAddEmail}
-                      disabled={!currentEmail.email || !currentEmail.password}
-                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2"
+                      onClick={() => alert('Google OAuth integration coming soon!')}
+                      className="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 py-3 shadow-sm"
                     >
-                      <div className="flex items-center gap-2 justify-center">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      <div className="flex items-center gap-3 justify-center">
+                        <svg className="w-5 h-5" viewBox="0 0 24 24">
+                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                         </svg>
-                        <span>Add Email Account</span>
+                        <span>Sign in with Google</span>
                       </div>
                     </Button>
+
+                    {/* Gmail Account Required Warning */}
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                      <div className="flex gap-2">
+                        <svg className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <div className="text-xs text-yellow-800">
+                          <p className="font-semibold mb-1">Gmail Account Required</p>
+                          <p>You need to sign in with a Gmail account to send emails. We&apos;ll request permission to send emails on your behalf.</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Manual SMTP Configuration */}
+                    <div className="border-t pt-4 mt-4">
+                      <p className="text-sm font-medium text-gray-700 mb-3">Or use SMTP Configuration:</p>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="form-label text-xs">Gmail Address</label>
+                          <Input
+                            type="email"
+                            placeholder="your.email@gmail.com"
+                            className="form-input"
+                            value={currentEmail.email}
+                            onChange={(e) => setCurrentEmail(prev => ({ ...prev, email: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <label className="form-label text-xs">App Password</label>
+                          <Input
+                            type="password"
+                            placeholder="Enter Gmail App Password"
+                            className="form-input"
+                            value={currentEmail.password}
+                            onChange={(e) => setCurrentEmail(prev => ({ ...prev, password: e.target.value }))}
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="form-label text-xs">SMTP Server</label>
+                            <Input
+                              type="text"
+                              placeholder="smtp.gmail.com"
+                              className="form-input"
+                              value={currentEmail.smtp}
+                              onChange={(e) => setCurrentEmail(prev => ({ ...prev, smtp: e.target.value }))}
+                            />
+                          </div>
+                          <div>
+                            <label className="form-label text-xs">Port</label>
+                            <Input
+                              type="text"
+                              placeholder="587"
+                              className="form-input"
+                              value={currentEmail.port}
+                              onChange={(e) => setCurrentEmail(prev => ({ ...prev, port: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={handleAddEmail}
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5"
+                        >
+                          Add Email Account
+                        </Button>
+
+                        {/* Test Email Section */}
+                        <div className="border-t pt-3 mt-3">
+                          <label className="form-label text-xs">Test Email Configuration</label>
+                          <div className="flex gap-2">
+                            <Input
+                              type="email"
+                              placeholder="Enter test email address"
+                              className="form-input flex-1"
+                              value={testEmail}
+                              onChange={(e) => setTestEmail(e.target.value)}
+                            />
+                            <Button
+                              type="button"
+                              onClick={handleSendTestEmail}
+                              disabled={isSendingTest}
+                              className="bg-green-600 hover:bg-green-700 text-white px-4 whitespace-nowrap"
+                            >
+                              {isSendingTest ? 'Sending...' : 'Send Test'}
+                            </Button>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Send a test email to verify SMTP configuration
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -748,7 +962,6 @@ export default function LeadGenerationAppPage() {
                         type="number"
                         placeholder="20"
                         min={5}
-                        max={100}
                         className="form-input"
                         {...register("maxResults", { valueAsNumber: true })}
                       />
@@ -772,6 +985,22 @@ export default function LeadGenerationAppPage() {
                       )}
                     </Button>
                   </div>
+
+                  {/* Search Progress Bar */}
+                  {isLoading && searchProgress.total > 0 && (
+                    <div className="mt-6 space-y-2">
+                      <div className="flex justify-between text-sm font-medium text-slate-700">
+                        <span>{searchProgress.message}</span>
+                        <span>{searchProgress.current} / {searchProgress.total}</span>
+                      </div>
+                      <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-300 ease-out rounded-full"
+                          style={{ width: `${searchProgress.total > 0 ? (searchProgress.current / searchProgress.total * 100) : 0}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
                 </form>
               </div>
             </div>
@@ -853,7 +1082,20 @@ export default function LeadGenerationAppPage() {
                   <Table>
                     <TableHeader>
                       <TableRow className="border-slate-200">
-                        <TableHead className="w-12 bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700 font-semibold">{t.select}</TableHead>
+                        <TableHead className="w-12 bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700 font-semibold">
+                          <div className="flex flex-col items-center gap-1">
+                            <span className="text-xs">{t.select}</span>
+                            {selectedLeads.length > 0 && (
+                              <button
+                                onClick={handleSelectAll}
+                                className="px-2 py-0.5 text-[10px] font-semibold bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors whitespace-nowrap"
+                                title={selectedLeads.length === filteredLeads.length ? "Deselect All" : "Select All"}
+                              >
+                                {selectedLeads.length === filteredLeads.length ? "None" : "All"}
+                              </button>
+                            )}
+                          </div>
+                        </TableHead>
                         <TableHead className="min-w-[200px] bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700 font-semibold">{t.name}</TableHead>
                         <TableHead className="min-w-[180px] bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700 font-semibold">{t.email}</TableHead>
                         <TableHead className="min-w-[120px] bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700 font-semibold">{t.phone}</TableHead>
