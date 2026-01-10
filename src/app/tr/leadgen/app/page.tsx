@@ -18,6 +18,9 @@ import { LeadDetailModal } from '../components/LeadDetailModal';
 import { EmailCampaign } from '../components/EmailCampaign';
 import { usePathname } from 'next/navigation';
 
+// API URL from environment variable
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 // Translation object
 const translations = {
   en: {
@@ -219,7 +222,7 @@ export default function LeadGenerationAppPage() {
 
     try {
       // Start polling immediately with the actual search request
-      const responsePromise = fetch(`http://206.189.57.55:8000/api/search`, {
+      const responsePromise = fetch(`${API_URL}/api/search`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -232,7 +235,7 @@ export default function LeadGenerationAppPage() {
         pollingInterval = setInterval(async () => {
           try {
             // Try to get progress with a generic search ID pattern
-            const progressResponse = await fetch(`http://206.189.57.55:8000/api/search-progress/search_${Math.floor(Date.now() / 1000)}`);
+            const progressResponse = await fetch(`${API_URL}/api/search-progress/search_${Math.floor(Date.now() / 1000)}`);
             if (progressResponse.ok) {
               const progress = await progressResponse.json();
               setSearchProgress({
@@ -283,7 +286,7 @@ export default function LeadGenerationAppPage() {
   const pollSearchProgress = async (searchId: string) => {
     const interval = setInterval(async () => {
       try {
-        const response = await fetch(`http://206.189.57.55:8000/api/search-progress/${searchId}`);
+        const response = await fetch(`${API_URL}/api/search-progress/${searchId}`);
         if (response.ok) {
           const progress = await response.json();
           setSearchProgress({
