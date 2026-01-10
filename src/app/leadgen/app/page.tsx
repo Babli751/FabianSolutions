@@ -221,35 +221,34 @@ export default function LeadGenerationAppPage() {
     let pollingInterval: NodeJS.Timeout | null = null;
 
     try {
-      // Start polling immediately with the actual search request
+      // Generate search ID on client side
+      const searchId = `search_${Date.now()}`;
+
+      // Start polling immediately before making the request
+      pollingInterval = setInterval(async () => {
+        try {
+          const progressResponse = await fetch(`${API_URL}/api/search-progress/${searchId}`);
+          if (progressResponse.ok) {
+            const progress = await progressResponse.json();
+            setSearchProgress({
+              current: progress.current || 0,
+              total: progress.total || data.maxResults,
+              message: progress.message || 'Searching...'
+            });
+          }
+        } catch {
+          // Ignore polling errors
+        }
+      }, 500);
+
+      // Start the actual search request with our search ID
       const responsePromise = fetch(`${API_URL}/api/search`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, search_id: searchId }),
       });
-
-      // Start polling after a short delay to let backend initialize
-      setTimeout(() => {
-        pollingInterval = setInterval(async () => {
-          try {
-            // Try to get progress with a generic search ID pattern
-            const progressResponse = await fetch(`${API_URL}/api/search-progress/search_${Math.floor(Date.now() / 1000)}`);
-            if (progressResponse.ok) {
-              const progress = await progressResponse.json();
-              setSearchProgress({
-                current: progress.current || 0,
-                total: progress.total || data.maxResults,
-                message: progress.message || 'Searching...'
-              });
-            }
-          } catch {
-            // Ignore polling errors
-            console.log('Polling attempt...');
-          }
-        }, 300);
-      }, 200);
 
       const response = await responsePromise;
 
@@ -259,13 +258,9 @@ export default function LeadGenerationAppPage() {
 
       const result = await response.json();
 
-      // Clear temp polling and start real polling if search_id exists
+      // Clear polling interval
       if (pollingInterval) {
         clearInterval(pollingInterval);
-      }
-
-      if (result.search_id) {
-        pollSearchProgress(result.search_id);
       }
 
       setLeads(result.leads || []);
