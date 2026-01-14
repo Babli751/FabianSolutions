@@ -16,3 +16,5 @@ google-api-python-client==2.108.0
 google-auth==2.25.2
 google-auth-oauthlib==1.2.0
 google-auth-httplib2==0.2.0
+passlib[bcrypt]==1.7.4
+openai==1.6.1

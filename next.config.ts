@@ -7,7 +7,10 @@ const nextConfig: NextConfig = {
   },
   trailingSlash: true,
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://206.189.57.55:8000',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 };
 

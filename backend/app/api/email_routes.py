@@ -14,6 +14,11 @@ router = APIRouter()
 # In-memory progress tracking (use Redis in production)
 email_progress = {}
 search_progress = {}
+search_leads = {}  # Store leads incrementally by search_id
+
+# Daily email limits tracking {email: {date: count}}
+daily_email_counts = {}
+DAILY_EMAIL_LIMIT = 40  # Max emails per account per day
 
 class EmailAccount(BaseModel):
     email: EmailStr
@@ -24,8 +29,8 @@ class SendEmailsRequest(BaseModel):
     subject: str
     body: str
     email_accounts: List[EmailAccount]
-    delay_min: float = 0.5
-    delay_max: float = 5.0
+    delay_min: float = 120.0  # 2 minutes minimum
+    delay_max: float = 180.0  # 3 minutes maximum
 
 class EmailProgress(BaseModel):
     total: int
@@ -45,6 +50,28 @@ def get_smtp_config(email: str):
     """Get SMTP config based on email domain"""
     domain = email.split('@')[1].lower()
     return SMTP_CONFIG.get(domain, {"host": "smtp.gmail.com", "port": 587})
+
+def get_daily_email_count(email: str) -> int:
+    """Get today's email count for an email address"""
+    today = datetime.now().strftime("%Y-%m-%d")
+    if email not in daily_email_counts:
+        daily_email_counts[email] = {}
+
+    # Clean up old dates
+    daily_email_counts[email] = {date: count for date, count in daily_email_counts[email].items() if date == today}
+
+    return daily_email_counts[email].get(today, 0)
+
+def increment_daily_email_count(email: str):
+    """Increment today's email count for an email address"""
+    today = datetime.now().strftime("%Y-%m-%d")
+    if email not in daily_email_counts:
+        daily_email_counts[email] = {}
+    daily_email_counts[email][today] = daily_email_counts[email].get(today, 0) + 1
+
+def get_remaining_daily_emails(email: str) -> int:
+    """Get remaining emails for today"""
+    return max(0, DAILY_EMAIL_LIMIT - get_daily_email_count(email))
 
 async def send_single_email(
     to_email: str,
@@ -70,6 +97,9 @@ async def send_single_email(
             server.starttls()
             server.login(from_email, password)
             server.send_message(message)
+
+        # Increment daily count after successful send
+        increment_daily_email_count(from_email)
 
         return {"success": True, "email": to_email}
 
@@ -111,8 +141,24 @@ async def send_emails_background(
         if email_progress[request_id]["status"] == "stopped":
             break
 
-        # Get current email account
+        # Get current email account and check daily limit
         account = request.email_accounts[account_index % len(request.email_accounts)]
+
+        # Check daily limit for current account
+        remaining = get_remaining_daily_emails(account.email)
+        if remaining <= 0:
+            # Try next account
+            account_index += 1
+            if account_index >= len(request.email_accounts):
+                # All accounts exhausted for today
+                email_progress[request_id]["status"] = "paused"
+                email_progress[request_id]["message"] = "Daily limit reached for all accounts"
+                break
+            account = request.email_accounts[account_index % len(request.email_accounts)]
+            remaining = get_remaining_daily_emails(account.email)
+            if remaining <= 0:
+                # This account also exhausted
+                continue
 
         # Send email
         result = await send_single_email(
@@ -261,12 +307,17 @@ async def scrape_website_endpoint(
 @router.get("/search-progress/{search_id}")
 async def get_search_progress(search_id: str):
     """
-    Get search progress
+    Get search progress and current leads found so far
     """
     if search_id not in search_progress:
         raise HTTPException(status_code=404, detail="Search request not found")
 
-    return search_progress[search_id]
+    progress = search_progress[search_id]
+    # Include current leads in progress response
+    progress["leads"] = search_leads.get(search_id, [])
+    progress["leads_count"] = len(search_leads.get(search_id, []))
+
+    return progress
 
 class SearchRequest(BaseModel):
     query: str  # Business type/query
@@ -296,13 +347,14 @@ async def search_businesses(request: SearchRequest):
 
     try:
         async with httpx.AsyncClient() as client:
-            # Initialize progress
+            # Initialize progress and leads storage
             search_progress[search_id] = {
                 "total": request.maxResults,
                 "current": 0,
                 "status": "searching",
                 "message": "Searching for businesses..."
             }
+            search_leads[search_id] = []  # Initialize empty leads array
 
             # Google Places Text Search API
             search_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
@@ -472,67 +524,117 @@ async def search_businesses(request: SearchRequest):
             leads = []
 
             for idx, place in enumerate(results, 1):
-                # Update progress for EVERY business found
-                search_progress[search_id]["current"] = idx
-                search_progress[search_id]["message"] = f"Processing business {idx}/{len(results)}"
-                # Small delay to make progress visible
-                await asyncio.sleep(0.3)
+                try:
+                    # Update progress for EVERY business found
+                    search_progress[search_id]["current"] = idx
+                    search_progress[search_id]["message"] = f"Processing business {idx}/{len(results)}"
+                    # Small delay to make progress visible
+                    await asyncio.sleep(0.3)
 
-                place_id = place.get("place_id")
+                    place_id = place.get("place_id")
 
-                # Get detailed place information
-                details_url = "https://maps.googleapis.com/maps/api/place/details/json"
-                details_params = {
-                    "place_id": place_id,
-                    "fields": "name,formatted_address,formatted_phone_number,website,place_id,geometry",
-                    "key": google_api_key
-                }
-
-                details_response = await client.get(details_url, params=details_params, timeout=30.0)
-                details_data = details_response.json()
-
-                if details_data.get("status") == "OK":
-                    place_details = details_data.get("result", {})
-
-                    # Extract information
-                    name = place_details.get("name", place.get("name", "Unknown Business"))
-                    address = place_details.get("formatted_address", place.get("formatted_address", ""))
-                    phone = place_details.get("formatted_phone_number")
-                    website = place_details.get("website")
-
-                    # Create Google Maps URL
-                    lat = place.get("geometry", {}).get("location", {}).get("lat")
-                    lng = place.get("geometry", {}).get("location", {}).get("lng")
-                    google_maps_url = f"https://www.google.com/maps/place/?q=place_id:{place_id}"
-
-                    lead = {
-                        "id": idx,
-                        "name": name,
-                        "email": None,  # Will be scraped from website
-                        "phone": phone,
-                        "website": website,
-                        "address": address,
-                        "status": "new",
-                        "googleMapsUrl": google_maps_url,
-                        "scrapedEmails": [],
-                        "businessCategory": request.query
+                    # Get detailed place information
+                    details_url = "https://maps.googleapis.com/maps/api/place/details/json"
+                    details_params = {
+                        "place_id": place_id,
+                        "fields": "name,formatted_address,formatted_phone_number,website,place_id,geometry",
+                        "key": google_api_key
                     }
 
-                    # If website exists, scrape emails
-                    if website:
+                    details_response = await client.get(details_url, params=details_params, timeout=30.0)
+                    details_data = details_response.json()
+
+                    if details_data.get("status") == "OK":
+                        place_details = details_data.get("result", {})
+
+                        # Extract information
+                        name = place_details.get("name", place.get("name", "Unknown Business"))
+                        address = place_details.get("formatted_address", place.get("formatted_address", ""))
+                        phone = place_details.get("formatted_phone_number")
+                        website = place_details.get("website")
+
+                        # Create Google Maps URL
+                        lat = place.get("geometry", {}).get("location", {}).get("lat")
+                        lng = place.get("geometry", {}).get("location", {}).get("lng")
+                        google_maps_url = f"https://www.google.com/maps/place/?q=place_id:{place_id}"
+
+                        lead = {
+                            "id": idx,
+                            "name": name,
+                            "email": None,  # Will be scraped from website
+                            "phone": phone,
+                            "website": website,
+                            "address": address,
+                            "status": "new",
+                            "googleMapsUrl": google_maps_url,
+                            "scrapedEmails": [],
+                            "businessCategory": request.query
+                        }
+                    else:
+                        # If details API fails, create basic lead from search result
+                        name = place.get("name", "Unknown Business")
+                        website = None
+                        lead = {
+                            "id": idx,
+                            "name": name,
+                            "email": None,
+                            "phone": None,
+                            "website": None,
+                            "address": place.get("formatted_address", ""),
+                            "status": "new",
+                            "googleMapsUrl": f"https://www.google.com/maps/place/?q=place_id:{place_id}",
+                            "scrapedEmails": [],
+                            "businessCategory": request.query
+                        }
+
+                    # If website exists, scrape emails (with timeout)
+                    if website and lead.get("website"):
                         try:
-                            search_progress[search_id]["message"] = f"Scraping emails from {name}..."
+                            search_progress[search_id]["message"] = f"Scraping emails from {name}... ({idx}/{len(results)})"
                             from app.services.email_scraper import EmailScraper
                             scraper = EmailScraper()
-                            scraped_emails = await scraper.scrape_website(website, request.query)
+
+                            # Use asyncio.wait_for to add a timeout to prevent hanging
+                            scraped_emails = await asyncio.wait_for(
+                                scraper.scrape_website(website, request.query),
+                                timeout=15.0  # 15 second timeout per website
+                            )
                             if scraped_emails:
                                 lead["scrapedEmails"] = scraped_emails
                                 # Set primary email as the first scraped email
                                 lead["email"] = scraped_emails[0]["email"]
+                        except asyncio.TimeoutError:
+                            print(f"[Non-fatal] Timeout scraping {website} after 15s - skipping email scraping for this business")
+                            # Continue processing without emails
                         except Exception as e:
-                            print(f"Error scraping emails from {website}: {str(e)}")
+                            print(f"[Non-fatal] Failed to scrape {website} - skipping email scraping for this business. Error: {str(e)}")
+                            # Continue processing without emails
 
                     leads.append(lead)
+                    # Store lead incrementally so it's available even if search fails later
+                    search_leads[search_id].append(lead)
+
+                except Exception as e:
+                    # If any error occurs processing this business, log it and continue
+                    print(f"Error processing business {idx}: {str(e)}")
+                    # Still try to add a basic lead entry
+                    try:
+                        basic_lead = {
+                            "id": idx,
+                            "name": place.get("name", f"Business {idx}"),
+                            "email": None,
+                            "phone": None,
+                            "website": None,
+                            "address": place.get("formatted_address", ""),
+                            "status": "new",
+                            "googleMapsUrl": "",
+                            "scrapedEmails": [],
+                            "businessCategory": request.query
+                        }
+                        leads.append(basic_lead)
+                        search_leads[search_id].append(basic_lead)
+                    except:
+                        pass  # Skip this lead entirely if we can't even create a basic entry
 
             # Mark as completed
             search_progress[search_id]["status"] = "completed"
@@ -541,20 +643,34 @@ async def search_businesses(request: SearchRequest):
 
             return {
                 "success": True,
-                "leads": leads,
-                "total": len(leads),
+                "leads": search_leads[search_id],  # Return stored leads
+                "total": len(search_leads[search_id]),
                 "search_id": search_id
             }
 
     except httpx.TimeoutException:
-        search_progress[search_id]["status"] = "failed"
-        search_progress[search_id]["message"] = "Request timed out"
-        raise HTTPException(status_code=504, detail="Request to Google Maps API timed out")
+        search_progress[search_id]["status"] = "partial"
+        search_progress[search_id]["message"] = f"Timeout - but found {len(search_leads.get(search_id, []))} businesses"
+        # Return partial results instead of error
+        return {
+            "success": False,
+            "leads": search_leads.get(search_id, []),
+            "total": len(search_leads.get(search_id, [])),
+            "search_id": search_id,
+            "message": "Search timed out but returning partial results"
+        }
     except Exception as e:
         if search_id in search_progress:
-            search_progress[search_id]["status"] = "failed"
-            search_progress[search_id]["message"] = str(e)
-        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+            search_progress[search_id]["status"] = "partial"
+            search_progress[search_id]["message"] = f"Error - but found {len(search_leads.get(search_id, []))} businesses"
+        # Return partial results instead of throwing error
+        return {
+            "success": False,
+            "leads": search_leads.get(search_id, []),
+            "total": len(search_leads.get(search_id, [])),
+            "search_id": search_id,
+            "message": f"Search encountered error but returning {len(search_leads.get(search_id, []))} businesses found: {str(e)}"
+        }
 
 class SMTPConfig(BaseModel):
     email: EmailStr
@@ -718,12 +834,14 @@ async def send_emails_oauth(request: SendEmailsOAuthRequest):
 
 class AIImproveRequest(BaseModel):
     text: str
+    subject: Optional[str] = None  # If provided, improve both subject and body
     sender_email: Optional[str] = None
 
 @router.post("/ai-improve")
 async def ai_improve_text(request: AIImproveRequest):
     """
     Improve email text using OpenAI GPT API
+    Can improve just body, or both subject and body
     """
     try:
         if not request.text or len(request.text.strip()) == 0:
@@ -746,7 +864,61 @@ async def ai_improve_text(request: AIImproveRequest):
         # Create prompt for email improvement
         sender_info = f"\n\nIMPORTANT: Add this sender contact information at the END of the email:\n{request.sender_email}" if request.sender_email else ""
 
-        system_prompt = """You are a professional email writing assistant. Your task is to improve the given email text to make it more professional, clear, and effective for business communication.
+        if request.subject:
+            # Improve both subject and body
+            system_prompt = """You are a professional email writing assistant. Your task is to improve the given email subject and body to make them more professional, clear, and effective for business communication.
+
+IMPORTANT: You MUST respond in the SAME LANGUAGE as the input text. If the user writes in Turkish, respond in Turkish. If in English, respond in English. If in any other language, respond in that language.
+
+Keep the core message but enhance:
+- Grammar and spelling
+- Professional tone
+- Clarity and structure
+- Persuasiveness
+- Call to action
+
+Return ONLY the improved content in this EXACT format:
+SUBJECT: [improved subject here]
+BODY: [improved body here]
+
+Do not add any other explanations or meta-commentary. Always maintain the original language."""
+
+            user_prompt = f"Please improve this email subject and body and respond in the same language as the input:\n\nCurrent Subject: {request.subject}\n\nCurrent Body:\n{request.text}{sender_info}"
+
+            # Call OpenAI API
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.7,
+                max_tokens=1500
+            )
+
+            improved_content = response.choices[0].message.content.strip()
+
+            # Parse the response
+            improved_subject = ""
+            improved_body = ""
+
+            if "SUBJECT:" in improved_content and "BODY:" in improved_content:
+                parts = improved_content.split("BODY:")
+                improved_subject = parts[0].replace("SUBJECT:", "").strip()
+                improved_body = parts[1].strip()
+            else:
+                improved_body = improved_content
+
+            return {
+                "success": True,
+                "improved_subject": improved_subject,
+                "improved_text": improved_body,
+                "original_length": len(request.text),
+                "improved_length": len(improved_body)
+            }
+        else:
+            # Improve only body
+            system_prompt = """You are a professional email writing assistant. Your task is to improve the given email text to make it more professional, clear, and effective for business communication.
 
 IMPORTANT: You MUST respond in the SAME LANGUAGE as the input text. If the user writes in Turkish, respond in Turkish. If in English, respond in English. If in any other language, respond in that language.
 
@@ -759,27 +931,27 @@ Keep the core message but enhance:
 
 Return ONLY the improved email text without any explanations or meta-commentary. Always maintain the original language."""
 
-        user_prompt = f"Please improve this email and respond in the same language as the input:\n\n{request.text}{sender_info}"
+            user_prompt = f"Please improve this email and respond in the same language as the input:\n\n{request.text}{sender_info}"
 
-        # Call OpenAI API
-        response = client.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.7,
-            max_tokens=1000
-        )
+            # Call OpenAI API
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.7,
+                max_tokens=1000
+            )
 
-        improved_text = response.choices[0].message.content.strip()
+            improved_text = response.choices[0].message.content.strip()
 
-        return {
-            "success": True,
-            "improved_text": improved_text,
-            "original_length": len(request.text),
-            "improved_length": len(improved_text)
-        }
+            return {
+                "success": True,
+                "improved_text": improved_text,
+                "original_length": len(request.text),
+                "improved_length": len(improved_text)
+            }
 
     except HTTPException:
         raise
@@ -788,3 +960,33 @@ Return ONLY the improved email text without any explanations or meta-commentary.
             status_code=500,
             detail=f"Failed to improve text: {str(e)}"
         )
+
+class EmailLimitRequest(BaseModel):
+    email_addresses: List[str]
+
+@router.post("/email-limits")
+async def get_email_limits(request: EmailLimitRequest):
+    """
+    Get daily email limits and usage for email addresses
+    """
+    limits = []
+    for email in request.email_addresses:
+        sent_today = get_daily_email_count(email)
+        remaining = get_remaining_daily_emails(email)
+        limits.append({
+            "email": email,
+            "daily_limit": DAILY_EMAIL_LIMIT,
+            "sent_today": sent_today,
+            "remaining": remaining,
+            "percentage_used": round((sent_today / DAILY_EMAIL_LIMIT) * 100, 1)
+        })
+
+    total_remaining = sum(limit["remaining"] for limit in limits)
+
+    return {
+        "success": True,
+        "limits": limits,
+        "total_daily_capacity": DAILY_EMAIL_LIMIT * len(request.email_addresses),
+        "total_sent_today": sum(limit["sent_today"] for limit in limits),
+        "total_remaining": total_remaining
+    }

@@ -1,5 +1,5 @@
 import re
-import requests
+import httpx
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from datetime import datetime
@@ -15,40 +15,126 @@ class EmailScraper:
 
     async def scrape_website(self, url: str, business_category: str) -> List[Dict]:
         """
-        Scrape emails from a website
+        Scrape emails from a website by checking homepage and common contact/about pages
         """
         scraped_emails = []
+        checked_urls = set()
 
         try:
-            # Pages to check
-            pages_to_check = [
-                ('', 'homepage'),
-                ('/contact', 'contact page'),
-                ('/about', 'about page'),
-                ('/contact-us', 'contact page'),
-                ('/about-us', 'about page'),
-            ]
+            async with httpx.AsyncClient(timeout=self.timeout, headers=self.headers, follow_redirects=True) as client:
+                # First, scrape the homepage and discover links
+                homepage_emails, discovered_links = await self._scrape_page_with_discovery(client, url, 'homepage', business_category)
+                scraped_emails.extend(homepage_emails)
+                checked_urls.add(url)
 
-            for path, source in pages_to_check:
-                page_url = urljoin(url, path)
-                emails = await self._scrape_page(page_url, source, business_category)
-                scraped_emails.extend(emails)
+                # Common page variations to check
+                potential_pages = [
+                    # Contact pages
+                    '/contact', '/contact-us', '/contactus', '/contact_us',
+                    '/get-in-touch', '/reach-us', '/contact.html', '/contact.php',
+                    # About pages
+                    '/about', '/about-us', '/aboutus', '/about_us',
+                    '/about.html', '/about.php',
+                    # Other common pages
+                    '/support', '/help', '/info', '/team'
+                ]
 
-            # Remove duplicates
-            unique_emails = self._remove_duplicates(scraped_emails)
+                # Add discovered links from homepage that contain contact/about keywords
+                for link in discovered_links:
+                    potential_pages.append(link)
 
-            return unique_emails
+                # Check which pages actually exist and scrape them
+                for path in potential_pages:
+                    try:
+                        page_url = urljoin(url, path)
+
+                        # Skip if already checked
+                        if page_url in checked_urls:
+                            continue
+
+                        # Quick HEAD request to check if page exists (faster than GET)
+                        head_response = await client.head(page_url, timeout=3.0)
+
+                        # If page exists (200, 301, 302), scrape it
+                        if head_response.status_code in [200, 301, 302]:
+                            checked_urls.add(page_url)
+                            source = 'contact page' if 'contact' in path.lower() else 'about page' if 'about' in path.lower() else 'info page'
+                            emails = await self._scrape_page_with_client(client, page_url, source, business_category)
+                            scraped_emails.extend(emails)
+                    except:
+                        # If HEAD fails, skip this page
+                        continue
+
+                # Remove duplicates
+                unique_emails = self._remove_duplicates(scraped_emails)
+                return unique_emails
 
         except Exception as e:
-            print(f"Error scraping {url}: {str(e)}")
+            print(f"[Non-fatal] Failed to scrape {url} - continuing with other pages. Error: {str(e)}")
             return []
 
-    async def _scrape_page(self, url: str, source: str, category: str) -> List[Dict]:
+    async def _scrape_page_with_discovery(self, client: httpx.AsyncClient, url: str, source: str, category: str):
         """
-        Scrape a single page for emails
+        Scrape a page for emails AND discover contact/about page links
+        Returns: (emails, discovered_links)
         """
         try:
-            response = requests.get(url, timeout=self.timeout, headers=self.headers)
+            response = await client.get(url, timeout=10.0)
+
+            if response.status_code != 200:
+                return [], []
+
+            soup = BeautifulSoup(response.text, 'html.parser')
+
+            # Find all emails in the page
+            emails_found = self.email_pattern.findall(response.text)
+
+            # Also check mailto links
+            mailto_links = soup.find_all('a', href=re.compile(r'^mailto:'))
+            for link in mailto_links:
+                email = link['href'].replace('mailto:', '').split('?')[0]
+                emails_found.append(email)
+
+            # Discover links that might lead to contact/about pages
+            discovered_links = []
+            contact_keywords = ['contact', 'about', 'reach', 'touch', 'support', 'help', 'team', 'info']
+
+            all_links = soup.find_all('a', href=True)
+            for link in all_links:
+                href = link.get('href', '').lower()
+                link_text = link.get_text('', strip=True).lower()
+
+                # Check if href or link text contains contact/about keywords
+                if any(keyword in href or keyword in link_text for keyword in contact_keywords):
+                    # Only add relative or same-domain links
+                    if href.startswith('/') or href.startswith('#') or not href.startswith('http'):
+                        if not href.startswith('#'):  # Skip anchor links
+                            discovered_links.append(link.get('href'))
+
+            # Create structured email objects
+            scraped_emails = []
+            for email in set(emails_found):  # Remove duplicates
+                if self._is_valid_email(email):
+                    scraped_emails.append({
+                        'email': email.lower(),
+                        'source': source,
+                        'category': category,
+                        'scraped_at': datetime.utcnow().isoformat(),
+                        'verified': True
+                    })
+
+            return scraped_emails, discovered_links
+
+        except Exception as e:
+            print(f"[Non-fatal] Skipping page {url} - {str(e)}")
+            return [], []
+
+    async def _scrape_page_with_client(self, client: httpx.AsyncClient, url: str, source: str, category: str) -> List[Dict]:
+        """
+        Scrape a single page for emails using existing client
+        """
+        try:
+            response = await client.get(url, timeout=10.0)
 
             if response.status_code != 200:
                 return []
@@ -79,7 +165,18 @@ class EmailScraper:
             return scraped_emails
 
         except Exception as e:
-            print(f"Error scraping page {url}: {str(e)}")
+            print(f"[Non-fatal] Skipping page {url} - {str(e)}")
+            return []
+
+    async def _scrape_page(self, url: str, source: str, category: str) -> List[Dict]:
+        """
+        Scrape a single page for emails (wrapper for backward compatibility)
+        """
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout, headers=self.headers, follow_redirects=True) as client:
+                return await self._scrape_page_with_client(client, url, source, category)
+        except Exception as e:
+            print(f"[Non-fatal] Skipping page {url} - {str(e)}")
             return []
 
     def _is_valid_email(self, email: str) -> bool:

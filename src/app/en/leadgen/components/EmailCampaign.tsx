@@ -11,7 +11,6 @@ const campaignSchema = z.object({
   subject: z.string().min(5, "Subject must be at least 5 characters"),
   body: z.string().min(20, "Email body must be at least 20 characters"),
   sender_email: z.string().email("Invalid email address"),
-  delay_between_emails: z.number().min(1).max(60),
   max_emails_per_hour: z.number().min(1).max(100),
 });
 
@@ -22,7 +21,6 @@ type Campaign = {
   body: string;
   sender_email: string;
   status: string;
-  delay_between_emails: number;
   max_emails_per_hour: number;
   created_at: string;
 };
@@ -40,38 +38,62 @@ type EmailSent = {
   created_at: string;
 };
 
+interface Lead {
+  id: number;
+  name: string;
+  email: string | null;
+}
+
 interface EmailCampaignProps {
   selectedLeads: number[];
+  leads: Lead[];  // Full lead objects
   onCampaignCreated?: (campaignId: number) => void;
 }
 
-export function EmailCampaign({ selectedLeads, onCampaignCreated }: EmailCampaignProps) {
+export function EmailCampaign({ selectedLeads, leads, onCampaignCreated }: EmailCampaignProps) {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [emailsSent, setEmailsSent] = useState<EmailSent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAIImproving, setIsAIImproving] = useState(false);
   const [activeTab, setActiveTab] = useState<'create' | 'manage'>('create');
+  const [campaignProgress, setCampaignProgress] = useState<{[key: number]: any}>({});
   // const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm({
+  const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm({
     resolver: zodResolver(campaignSchema),
     defaultValues: {
       name: '',
       subject: '',
       body: '',
       sender_email: '',
-      delay_between_emails: 5,
       max_emails_per_hour: 20,
     },
   });
 
+  const watchedSubject = watch('subject');
+  const watchedBody = watch('body');
+
   useEffect(() => {
-    fetchCampaigns();
-    fetchEmailsSent();
+    // Only run on client side after mount
+    if (typeof window !== 'undefined') {
+      fetchCampaigns();
+      fetchEmailsSent();
+    }
   }, []);
+
+  const getAuthHeaders = (): Record<string, string> => {
+    if (typeof window === 'undefined') {
+      return {};
+    }
+    const token = localStorage.getItem('session_token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  };
 
   const fetchCampaigns = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/campaigns`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/campaigns`, {
+        headers: getAuthHeaders()
+      });
       if (response.ok) {
         const data = await response.json();
         setCampaigns(data.campaigns || []);
@@ -83,7 +105,9 @@ export function EmailCampaign({ selectedLeads, onCampaignCreated }: EmailCampaig
 
   const fetchEmailsSent = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/emails-sent`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/emails-sent`, {
+        headers: getAuthHeaders()
+      });
       if (response.ok) {
         const data = await response.json();
         setEmailsSent(data.emails_sent || []);
@@ -98,7 +122,10 @@ export function EmailCampaign({ selectedLeads, onCampaignCreated }: EmailCampaig
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/campaigns`, {
         method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
         headers: {
+          ...getAuthHeaders(),
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
@@ -111,11 +138,11 @@ export function EmailCampaign({ selectedLeads, onCampaignCreated }: EmailCampaig
       const campaign = await response.json();
       setCampaigns(prev => [...prev, campaign]);
       reset();
-      
+
       if (onCampaignCreated) {
         onCampaignCreated(campaign.id);
       }
-      
+
       alert('Campaign created successfully!');
     } catch (error) {
       alert('Error creating campaign');
@@ -126,26 +153,72 @@ export function EmailCampaign({ selectedLeads, onCampaignCreated }: EmailCampaig
   };
 
   const startCampaign = async (campaignId: number) => {
+    if (selectedLeads.length === 0) {
+      alert('Please select leads first');
+      return;
+    }
+
+    // Get selected lead objects with emails
+    const selectedLeadObjects = leads.filter(lead =>
+      selectedLeads.includes(lead.id) && lead.email
+    );
+
+    if (selectedLeadObjects.length === 0) {
+      alert('Selected leads must have email addresses');
+      return;
+    }
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/campaigns/start`, {
         method: 'POST',
         headers: {
+          ...getAuthHeaders(),
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ campaign_id: campaignId }),
+        body: JSON.stringify({
+          campaign_id: campaignId,
+          leads: selectedLeadObjects
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to start campaign');
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to start campaign');
       }
 
       setCampaigns(prev => prev.map(campaign =>
         campaign.id === campaignId ? { ...campaign, status: 'running' } : campaign
       ));
-      
-      alert('Campaign started successfully!');
-    } catch (error) {
-      alert('Error starting campaign');
+
+      alert(`Campaign started! Sending emails to ${selectedLeadObjects.length} leads`);
+
+      // Start polling for progress
+      const pollInterval = setInterval(async () => {
+        try {
+          const progressResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/campaigns/${campaignId}/progress`, {
+            headers: getAuthHeaders()
+          });
+          if (progressResponse.ok) {
+            const progress = await progressResponse.json();
+            setCampaignProgress(prev => ({
+              ...prev,
+              [campaignId]: progress
+            }));
+
+            // Stop polling if campaign completed or failed
+            if (progress.status === 'completed' || progress.status === 'failed') {
+              clearInterval(pollInterval);
+              fetchEmailsSent(); // Refresh emails sent list
+              fetchCampaigns(); // Refresh campaigns list
+            }
+          }
+        } catch (err) {
+          console.error('Error polling progress:', err);
+        }
+      }, 2000); // Poll every 2 seconds
+
+    } catch (error: any) {
+      alert(`Error starting campaign: ${error.message}`);
       console.error('Error:', error);
     }
   };
@@ -155,6 +228,7 @@ export function EmailCampaign({ selectedLeads, onCampaignCreated }: EmailCampaig
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/campaigns/stop`, {
         method: 'POST',
         headers: {
+          ...getAuthHeaders(),
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ campaign_id: campaignId }),
@@ -175,38 +249,7 @@ export function EmailCampaign({ selectedLeads, onCampaignCreated }: EmailCampaig
     }
   };
 
-  const sendCampaignToLeads = async (campaignId: number) => {
-    if (selectedLeads.length === 0) {
-      alert('Please select leads first');
-      return;
-    }
-
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/send-emails`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          lead_ids: selectedLeads,
-          campaign_id: campaignId,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to queue emails');
-      }
-
-      const result = await response.json();
-      alert(`Email campaign queued for ${result.total_leads} leads`);
-      
-      // Refresh emails sent
-      fetchEmailsSent();
-    } catch (error) {
-      alert('Error queuing emails');
-      console.error('Error:', error);
-    }
-  };
+  // Removed sendCampaignToLeads - now using startCampaign for all campaign starting
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -224,6 +267,48 @@ export function EmailCampaign({ selectedLeads, onCampaignCreated }: EmailCampaig
       case 'failed': return 'status-error';
       case 'pending': return 'status-warning';
       default: return 'bg-slate-100 text-slate-800';
+    }
+  };
+
+  const handleAIImprove = async () => {
+    if (!watchedSubject?.trim() && !watchedBody?.trim()) {
+      alert("Please enter a subject and/or email body first");
+      return;
+    }
+
+    setIsAIImproving(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/ai-improve`, {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: watchedBody || '',
+          subject: watchedSubject || null,
+          sender_email: watch('sender_email') || null,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('AI improvement failed');
+      }
+
+      const result = await response.json();
+
+      // Update both subject and body if both were improved
+      if (result.improved_subject) {
+        setValue('subject', result.improved_subject);
+      }
+      setValue('body', result.improved_text);
+
+      alert("Email improved successfully by AI! ✨");
+    } catch (error) {
+      alert("Error occurred while improving email");
+      console.error('Error:', error);
+    } finally {
+      setIsAIImproving(false);
     }
   };
 
@@ -312,34 +397,45 @@ export function EmailCampaign({ selectedLeads, onCampaignCreated }: EmailCampaig
                 {errors.body && <p className="text-red-400 text-sm mt-1">{errors.body.message?.toString()}</p>}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="form-label">
-                    Delay Between Emails (seconds)
-                  </label>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={60}
-                    className="form-input"
-                    {...register("delay_between_emails", { valueAsNumber: true })}
-                  />
-                  {errors.delay_between_emails && <p className="text-red-400 text-sm mt-1">{errors.delay_between_emails.message?.toString()}</p>}
-                </div>
-                
-                <div>
-                  <label className="form-label">
-                    Max Emails Per Hour
-                  </label>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={100}
-                    className="form-input"
-                    {...register("max_emails_per_hour", { valueAsNumber: true })}
-                  />
-                  {errors.max_emails_per_hour && <p className="text-red-400 text-sm mt-1">{errors.max_emails_per_hour.message?.toString()}</p>}
-                </div>
+              {/* AI Improve Button */}
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleAIImprove}
+                  disabled={isAIImproving || (!watchedSubject?.trim() && !watchedBody?.trim())}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-8 py-3 text-base font-semibold rounded-lg shadow-lg disabled:cursor-not-allowed transition-colors"
+                >
+                  {isAIImproving ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>AI is Improving...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <span>✨ Improve with AI</span>
+                    </div>
+                  )}
+                </button>
+              </div>
+
+              <div>
+                <label className="form-label">
+                  Max Emails Per Hour
+                </label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={100}
+                  className="form-input"
+                  {...register("max_emails_per_hour", { valueAsNumber: true })}
+                />
+                <p className="text-slate-400 text-xs mt-1">
+                  Note: Emails are automatically sent with 2-3 minute random delays between each send
+                </p>
+                {errors.max_emails_per_hour && <p className="text-red-400 text-sm mt-1">{errors.max_emails_per_hour.message?.toString()}</p>}
               </div>
 
               <Button type="submit" disabled={isLoading} className="w-full">
@@ -370,10 +466,7 @@ export function EmailCampaign({ selectedLeads, onCampaignCreated }: EmailCampaig
                       </span>
                     </div>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
-                      <div>
-                        <span className="text-slate-500">Delay:</span> <span className="text-slate-300">{campaign.delay_between_emails}s</span>
-                      </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 text-sm">
                       <div>
                         <span className="text-slate-500">Max/Hour:</span> <span className="text-slate-300">{campaign.max_emails_per_hour}</span>
                       </div>
@@ -384,21 +477,43 @@ export function EmailCampaign({ selectedLeads, onCampaignCreated }: EmailCampaig
                         <span className="text-slate-500">Selected Leads:</span> <span className="text-slate-300">{selectedLeads.length}</span>
                       </div>
                     </div>
-                    
+
+                    {/* Campaign Progress */}
+                    {campaignProgress[campaign.id] && (
+                      <div className="mb-4 bg-slate-700 rounded-lg p-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm font-medium text-white">Sending Progress</span>
+                          <span className="text-sm text-slate-300">
+                            {campaignProgress[campaign.id].sent} / {campaignProgress[campaign.id].total} sent
+                            {campaignProgress[campaign.id].failed > 0 && (
+                              <span className="text-red-400 ml-2">
+                                ({campaignProgress[campaign.id].failed} failed)
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="w-full bg-slate-600 rounded-full h-3 mb-2">
+                          <div
+                            className="bg-blue-500 h-3 rounded-full transition-all duration-300"
+                            style={{
+                              width: `${campaignProgress[campaign.id].total > 0
+                                ? (campaignProgress[campaign.id].sent / campaignProgress[campaign.id].total) * 100
+                                : 0}%`
+                            }}
+                          ></div>
+                        </div>
+                        <p className="text-xs text-slate-400">{campaignProgress[campaign.id].message}</p>
+                      </div>
+                    )}
+
                     <div className="flex flex-wrap gap-2">
                       {campaign.status === 'draft' && (
                         <>
                           <Button
-                            onClick={() => sendCampaignToLeads(campaign.id)}
+                            onClick={() => startCampaign(campaign.id)}
                             disabled={selectedLeads.length === 0}
                           >
-                            Queue for Selected Leads
-                          </Button>
-                          <Button
-                            onClick={() => startCampaign(campaign.id)}
-                            variant="outline"
-                          >
-                            Start Campaign
+                            Start Campaign with Selected Leads
                           </Button>
                         </>
                       )}
