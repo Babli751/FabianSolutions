@@ -50,3 +50,8 @@ backend/**/__pycache__/
 
 # Claude Code
 .claude/
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
