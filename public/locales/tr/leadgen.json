@@ -1,0 +1,65 @@
+{
+  "LeadGenPageContent": {
+    "heroSection": {
+      "title": "Akıllı Müşteri Adayı Oluşturma ve E-posta Otomasyonu",
+      "description": "İşletmeleri bulun, AI ile profesyonel e-postalar oluşturun ve otomatik kampanyalar gönderin",
+      "emailConfiguration": "E-posta Yapılandırması",
+      "contactManagement": "İletişim Yönetimi ve Kampanya Otomasyonu"
+    },
+    "emailConfig": {
+      "title": "E-posta Yapılandırması",
+      "subtitle": "E-posta kampanyanızı kurun",
+      "antiBanTitle": "Ban Koruması",
+      "antiBanDescription": "E-posta sağlayıcıları günlük gönderim sınırlar ve yasaklanabilirsiniz. Birden fazla strateji kullanıyoruz:",
+      "antiBanStrategy1": "E-postaları dağıtmak için birden fazla hesap",
+      "antiBanStrategy2": "E-postalar arasında rastgele gecikmeler (0.5-5 saniye)",
+      "antiBanStrategy3": "SMTP protokolü - hesaplarınıza giriş yapmayız",
+      "addedAccounts": "Eklenen E-posta Hesapları",
+      "gmailOAuth": "Gmail Hesabı (OAuth2 - Önerilen)",
+      "smtpConfig": "Veya SMTP Yapılandırması kullanın:",
+      "emailAddress": "E-posta Adresi",
+      "appPassword": "Uygulama Şifresi",
+      "smtpServer": "SMTP Sunucusu",
+      "smtpPort": "SMTP Portu",
+      "addEmailAccount": "E-posta Hesabı Ekle"
+    },
+    "templates": {
+      "title": "E-posta Şablonları",
+      "partnership": "Ortaklık",
+      "partnershipDesc": "İş ortaklığı",
+      "service": "Hizmet Teklifi",
+      "serviceDesc": "Hizmetlerinizi sunun",
+      "introduction": "Tanıtım",
+      "introductionDesc": "Hızlı tanışma",
+      "custom": "Özel",
+      "customDesc": "Kendiniz yazın"
+    },
+    "search": {
+      "title": "İşletme Ara",
+      "subtitle": "Potansiyel müşteri adaylarını bulun ve bağlantı kurun",
+      "location": "Konum (Şehir/Ülke)",
+      "locationPlaceholder": "örn., İstanbul, Türkiye",
+      "category": "İşletme Kategorisi",
+      "categoryPlaceholder": "örn., Restoran, Otel, Yazılım Şirketi",
+      "searchQuery": "Arama Sorgusu (İsteğe Bağlı)",
+      "searchQueryPlaceholder": "Ek arama terimleri...",
+      "searchButton": "İşletme Ara",
+      "searching": "Aranıyor"
+    },
+    "results": {
+      "foundLeads": "Bulunan Müşteri Adayları",
+      "selectLeads": "E-posta göndermek için müşteri adaylarını seçin",
+      "hideCampaign": "Kampanyayı Gizle",
+      "emailCampaign": "E-posta Kampanyası",
+      "sendingEmails": "E-postalar Gönderiliyor",
+      "sendEmails": "Seçilenlere E-posta Gönder"
+    },
+    "filters": {
+      "filterLeads": "Müşteri Adaylarını Filtrele",
+      "hasEmail": "E-posta Var",
+      "hasPhone": "Telefon Var",
+      "verified": "Doğrulanmış",
+      "rating": "Min Puan"
+    }
+  }
+}

@@ -170,7 +170,7 @@ export default function LeadGenerationAppPage() {
   const [selectedLeads, setSelectedLeads] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const [sendingProgress, setSendingProgress] = useState({ sent: 0, total: 0 });
+  const [sendingProgress, setSendingProgress] = useState({ sent: 0, total: 0, skipped: 0 });
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [filters, setFilters] = useState<FilterOptions>({
     hasEmail: false,
@@ -193,10 +193,11 @@ export default function LeadGenerationAppPage() {
     password: string;
     smtp: string;
     port: string;
+    name?: string; // Optional sender name
   };
 
   const [emailAccounts, setEmailAccounts] = useState<EmailAccount[]>([]);
-  const [currentEmail, setCurrentEmail] = useState({ email: '', password: '', smtp: 'smtp.gmail.com', port: '587' });
+  const [currentEmail, setCurrentEmail] = useState({ email: '', password: '', smtp: 'smtp.gmail.com', port: '587', name: '' });
   const [testEmail, setTestEmail] = useState('');
   const [isSendingTest, setIsSendingTest] = useState(false);
   const [emailSubject, setEmailSubject] = useState('');
@@ -204,10 +205,19 @@ export default function LeadGenerationAppPage() {
   const [isAIImproving, setIsAIImproving] = useState(false);
   const [emailLimits, setEmailLimits] = useState<any>(null);
 
-  // Step Management
-  const [currentStep, setCurrentStep] = useState<1 | 2>(1);
+  // AI Search States
+  const [userProfile, setUserProfile] = useState('');
+  const [userGoal, setUserGoal] = useState('');
+  const [showAISearch, setShowAISearch] = useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  // AI Email Generator States
+  const [emailRequest, setEmailRequest] = useState('');
+  const [generatedEmail, setGeneratedEmail] = useState({ subject: '', body: '' });
+  const [isGeneratingEmail, setIsGeneratingEmail] = useState(false);
+  const [senderNameForEmail, setSenderNameForEmail] = useState(''); // User's name for email generation
+
+
+  const { register, handleSubmit, formState: { errors }, getValues } = useForm({
     resolver: zodResolver(searchSchema),
     defaultValues: {
       query: '',
@@ -223,6 +233,16 @@ export default function LeadGenerationAppPage() {
     if (token) {
       // Save token to localStorage
       localStorage.setItem('session_token', token);
+
+      // Check if there was a saved return path (for localized routes)
+      const returnPath = localStorage.getItem('oauth_return_path');
+      if (returnPath && returnPath !== window.location.pathname) {
+        localStorage.removeItem('oauth_return_path');
+        // Redirect with token so it can be picked up by the localized page
+        window.location.href = `${returnPath}?token=${token}`;
+        return; // Don't clean up URL yet, let the target page do it
+      }
+
       // Clean up URL
       window.history.replaceState({}, '', window.location.pathname);
     } else {
@@ -264,12 +284,20 @@ export default function LeadGenerationAppPage() {
       }, 500);
 
       // Start the actual search request with our search ID
+      // If location is empty (Worldwide), don't send it to backend
+      const searchPayload = {
+        query: data.query,
+        maxResults: data.maxResults,
+        search_id: searchId,
+        ...(data.location && { location: data.location }) // Only include location if not empty
+      };
+
       const responsePromise = fetch(`${API_URL}/api/search`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...data, search_id: searchId }),
+        body: JSON.stringify(searchPayload),
       });
 
       const response = await responsePromise;
@@ -458,6 +486,11 @@ export default function LeadGenerationAppPage() {
   };
 
   const handleAddEmail = () => {
+    if (emailAccounts.length >= 5) {
+      alert("Maximum 5 email accounts allowed to prevent bans");
+      return;
+    }
+
     if (!currentEmail.email || !currentEmail.password || !currentEmail.smtp || !currentEmail.port) {
       alert("Please fill all SMTP fields");
       return;
@@ -468,11 +501,12 @@ export default function LeadGenerationAppPage() {
       email: currentEmail.email,
       password: currentEmail.password,
       smtp: currentEmail.smtp,
-      port: currentEmail.port
+      port: currentEmail.port,
+      name: currentEmail.name || undefined
     };
 
     setEmailAccounts(prev => [...prev, newAccount]);
-    setCurrentEmail({ email: '', password: '', smtp: 'smtp.gmail.com', port: '587' });
+    setCurrentEmail({ email: '', password: '', smtp: 'smtp.gmail.com', port: '587', name: '' });
   };
 
   const handleSendTestEmail = async () => {
@@ -550,13 +584,6 @@ export default function LeadGenerationAppPage() {
     }
   };
 
-  const handleNextStep = async () => {
-    setCurrentStep(2);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // Fetch email limits for all accounts
-    await fetchEmailLimits();
-  };
 
   const fetchEmailLimits = async () => {
     try {
@@ -598,9 +625,146 @@ export default function LeadGenerationAppPage() {
     }
   };
 
-  const handlePreviousStep = () => {
-    setCurrentStep(1);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Auto-detect SMTP settings based on email domain
+  const handleEmailChange = (email: string) => {
+    setCurrentEmail(prev => ({ ...prev, email }));
+
+    const domain = email.split('@')[1]?.toLowerCase();
+    const smtpConfigs: { [key: string]: { smtp: string; port: string } } = {
+      'gmail.com': { smtp: 'smtp.gmail.com', port: '587' },
+      'outlook.com': { smtp: 'smtp-mail.outlook.com', port: '587' },
+      'hotmail.com': { smtp: 'smtp-mail.outlook.com', port: '587' },
+      'live.com': { smtp: 'smtp-mail.outlook.com', port: '587' },
+      'yahoo.com': { smtp: 'smtp.mail.yahoo.com', port: '587' },
+      'icloud.com': { smtp: 'smtp.mail.me.com', port: '587' },
+      'aol.com': { smtp: 'smtp.aol.com', port: '587' },
+      'zoho.com': { smtp: 'smtp.zoho.com', port: '587' },
+      'protonmail.com': { smtp: 'smtp.protonmail.com', port: '587' },
+      'gmx.com': { smtp: 'smtp.gmx.com', port: '587' },
+      'mail.com': { smtp: 'smtp.mail.com', port: '587' },
+      'yandex.com': { smtp: 'smtp.yandex.com', port: '587' },
+      'fastmail.com': { smtp: 'smtp.fastmail.com', port: '587' },
+      'mail.ru': { smtp: 'smtp.mail.ru', port: '587' },
+    };
+
+    if (domain && smtpConfigs[domain]) {
+      setCurrentEmail(prev => ({
+        ...prev,
+        smtp: smtpConfigs[domain].smtp,
+        port: smtpConfigs[domain].port
+      }));
+    }
+  };
+
+  const handleAISmartSearch = async () => {
+    if (!userProfile.trim() || !userGoal.trim()) {
+      alert("Please fill in your profile and what you're looking for");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Step 1: Get AI suggestions
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/ai-smart-search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_profile: userProfile,
+          user_goal: userGoal,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('AI Smart Search failed');
+      }
+
+      const result = await response.json();
+      console.log('AI Smart Search Result:', result);
+
+      // Step 2: Use AI suggestions to perform the actual search
+      const formValues = getValues();
+      const searchData = {
+        query: result.business_type || 'businesses',
+        // ALWAYS use dropdown location - ignore AI's location suggestion
+        location: formValues.location || '',  // Empty string = Worldwide
+        maxResults: formValues.maxResults || 20,
+      };
+      console.log('Search Data to send:', searchData);
+
+      // Call the actual search function
+      await onSubmit(searchData);
+
+    } catch (error) {
+      alert("Error generating smart search");
+      console.error('Error:', error);
+      setIsLoading(false);
+    }
+  };
+
+  const handleGenerateEmail = async () => {
+    if (!emailRequest.trim()) {
+      alert("Please describe what kind of email you want to send");
+      return;
+    }
+
+    // Get sender name from: manual input > OAuth account > SMTP account
+    let senderName = senderNameForEmail.trim() || null;
+
+    if (!senderName) {
+      // Try to get from OAuth
+      try {
+        const oauthStatusResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/oauth/status`);
+        const oauthStatus = await oauthStatusResponse.json();
+        if (oauthStatus.connected && oauthStatus.accounts.length > 0) {
+          senderName = oauthStatus.accounts[0].name || null;
+        }
+      } catch (e) {
+        console.error('Failed to fetch OAuth status:', e);
+      }
+    }
+
+    if (!senderName && emailAccounts.length > 0) {
+      // Fallback to SMTP account name
+      senderName = emailAccounts[0].name || null;
+    }
+
+    setIsGeneratingEmail(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/ai-generate-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          request: emailRequest,
+          user_profile: userProfile || null,
+          sender_name: senderName,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('AI Email Generation failed');
+      }
+
+      const result = await response.json();
+      setGeneratedEmail({
+        subject: result.subject || '',
+        body: result.body || ''
+      });
+
+      // Also update the old emailSubject and emailDescription for compatibility
+      setEmailSubject(result.subject || '');
+      setEmailDescription(result.body || '');
+
+      alert("✨ Professional email generated successfully!");
+    } catch (error) {
+      alert("Error generating email");
+      console.error('Error:', error);
+    } finally {
+      setIsGeneratingEmail(false);
+    }
   };
 
   const handleAIImprove = async () => {
@@ -658,8 +822,11 @@ export default function LeadGenerationAppPage() {
   };
 
   const sendEmails = async () => {
-    if (selectedLeads.length === 0) {
-      alert("Please select at least one lead");
+    // Get all leads with emails
+    const leadsToSend = filteredLeads.filter(lead => lead.email);
+
+    if (leadsToSend.length === 0) {
+      alert("No leads with email addresses found");
       return;
     }
 
@@ -675,15 +842,19 @@ export default function LeadGenerationAppPage() {
       return;
     }
 
-    if (!emailSubject || !emailDescription) {
-      alert("Please enter email subject and description");
+    // Check if email content is available from editable AI generator fields
+    const subject = generatedEmail.subject;
+    const body = generatedEmail.body;
+
+    if (!subject || !body) {
+      alert("Please generate an email first using AI Email Generator");
       return;
     }
 
     const controller = new AbortController();
     setAbortController(controller);
     setIsSending(true);
-    setSendingProgress({ sent: 0, total: selectedLeads.length });
+    setSendingProgress({ sent: 0, total: leadsToSend.length });
 
     try {
       // If OAuth is available, use it; otherwise use SMTP
@@ -691,15 +862,10 @@ export default function LeadGenerationAppPage() {
         // Send via OAuth for each lead
         let sent = 0;
         let failed = 0;
+        let skipped = 0;
         const fromEmail = oauthStatus.accounts[0].email;
 
-        for (const leadId of selectedLeads) {
-          const lead = leads.find(l => l.id === leadId);
-          if (!lead || !lead.email) {
-            failed++;
-            continue;
-          }
-
+        for (const lead of leadsToSend) {
           try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/oauth/send-email`, {
               method: 'POST',
@@ -709,19 +875,25 @@ export default function LeadGenerationAppPage() {
               body: JSON.stringify({
                 from_email: fromEmail,
                 to_email: lead.email,
-                subject: emailSubject,
-                body: emailDescription
+                subject: subject,
+                body: body
               }),
               signal: controller.signal,
             });
 
             if (response.ok) {
-              sent++;
-              setSendingProgress({ sent, total: selectedLeads.length });
-              // Add delay between emails (2-3 minutes)
-              if (sent < selectedLeads.length) {
-                const delay = Math.random() * 60000 + 120000; // 2-3 minutes in ms
-                await new Promise(resolve => setTimeout(resolve, delay));
+              const result = await response.json();
+              if (result.skipped) {
+                skipped++;
+                setSendingProgress({ sent, total: leadsToSend.length, skipped });
+              } else {
+                sent++;
+                setSendingProgress({ sent, total: leadsToSend.length, skipped });
+                // Add delay between emails (2-3 minutes for anti-spam protection)
+                if (sent < leadsToSend.length) {
+                  const delay = Math.random() * 60000 + 120000; // 2-3 minutes in ms
+                  await new Promise(resolve => setTimeout(resolve, delay));
+                }
               }
             } else {
               failed++;
@@ -734,23 +906,26 @@ export default function LeadGenerationAppPage() {
           }
         }
 
-        alert(`Emails sent: ${sent}, Failed: ${failed}`);
+        const skipMsg = skipped > 0 ? `, Skipped: ${skipped} (already sent)` : '';
+        alert(`Emails sent: ${sent}, Failed: ${failed}${skipMsg}`);
         // Update statuses
+        const sentLeadIds = leadsToSend.map(l => l.id);
         setLeads(prev => prev.map(lead =>
-          selectedLeads.includes(lead.id) && lead.email ? { ...lead, status: "email_sent" } : lead
+          sentLeadIds.includes(lead.id) ? { ...lead, status: "email_sent" } : lead
         ));
-        setSendingProgress({ sent, total: selectedLeads.length });
+        setSendingProgress({ sent, total: leadsToSend.length, skipped });
       } else {
         // Use SMTP method
+        const leadIds = leadsToSend.map(l => l.id);
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/send-emails`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            lead_ids: selectedLeads,
-            subject: emailSubject,
-            body: emailDescription,
+            lead_ids: leadIds,
+            subject: subject,
+            body: body,
             email_accounts: emailAccounts.map(acc => ({
               email: acc.email,
               password: acc.password
@@ -770,9 +945,9 @@ export default function LeadGenerationAppPage() {
 
         // Update statuses
         setLeads(prev => prev.map(lead =>
-          selectedLeads.includes(lead.id) ? { ...lead, status: "email_sent" } : lead
+          leadIds.includes(lead.id) ? { ...lead, status: "email_sent" } : lead
         ));
-        setSendingProgress({ sent: selectedLeads.length, total: selectedLeads.length });
+        setSendingProgress({ sent: leadsToSend.length, total: leadsToSend.length });
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -833,28 +1008,8 @@ export default function LeadGenerationAppPage() {
 
       <div className="container mx-auto py-8 px-4 -mt-8 relative z-10">
 
-        {/* Step Indicator */}
+        {/* Email Configuration - Always visible */}
         <div className="mb-8">
-          <div className="flex items-center justify-center gap-4">
-            <div className={`flex items-center gap-2 ${currentStep === 1 ? 'text-blue-600' : 'text-slate-400'}`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${currentStep === 1 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
-                1
-              </div>
-              <span className="hidden sm:block font-semibold">Email Setup</span>
-            </div>
-            <div className="w-16 h-1 bg-slate-300"></div>
-            <div className={`flex items-center gap-2 ${currentStep === 2 ? 'text-blue-600' : 'text-slate-400'}`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${currentStep === 2 ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
-                2
-              </div>
-              <span className="hidden sm:block font-semibold">Search & Send</span>
-            </div>
-          </div>
-        </div>
-
-        {/* STEP 1: Email Configuration */}
-        {currentStep === 1 && (
-          <div className="max-w-3xl mx-auto">
             <div className="card">
               <div className="card-header">
                 <div className="flex items-center gap-3">
@@ -927,6 +1082,16 @@ export default function LeadGenerationAppPage() {
                   <div className="border-t pt-4 mt-4">
                     <p className="text-sm font-medium text-gray-700 mb-3">Or use SMTP Configuration:</p>
                     <div className="space-y-3">
+                      <div>
+                        <label className="form-label text-xs">Your Name (will appear in emails)</label>
+                        <Input
+                          type="text"
+                          placeholder="e.g., John Doe"
+                          className="form-input"
+                          value={currentEmail.name}
+                          onChange={(e) => setCurrentEmail(prev => ({ ...prev, name: e.target.value }))}
+                        />
+                      </div>
                       <div>
                         <label className="form-label text-xs">Gmail Address</label>
                         <Input
@@ -1004,46 +1169,99 @@ export default function LeadGenerationAppPage() {
                     </div>
                   </div>
 
-                  {/* Next Button */}
+                  {/* AI Email Generator */}
                   <div className="border-t pt-4">
-                    <button
-                      type="button"
-                      onClick={handleNextStep}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold rounded-lg shadow-lg transition-colors"
-                    >
-                      <div className="flex items-center gap-2 justify-center">
-                        <span>Next: Search for Leads</span>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
+                        <h3 className="text-lg font-bold text-green-900">✨ AI Professional Email Generator</h3>
                       </div>
-                    </button>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Left: Input */}
+                        <div>
+                          <div className="mb-3">
+                            <label className="form-label text-xs font-semibold text-green-900">Your Name (for email signature)</label>
+                            <Input
+                              type="text"
+                              placeholder="e.g., John Doe (will auto-fill from connected account)"
+                              className="form-input text-sm"
+                              value={senderNameForEmail}
+                              onChange={(e) => setSenderNameForEmail(e.target.value)}
+                            />
+                          </div>
+                          <label className="form-label text-sm font-semibold text-green-900">What email do you want to send? (Any language)</label>
+                          <textarea
+                            className="form-input resize-none text-sm"
+                            rows={6}
+                            placeholder="e.g., Restoranlar için web sitesi tasarım hizmeti sunmak istiyorum. Onlara işlerini online'da daha profesyonel gösterebileceğimi ve daha fazla müşteri çekebileceklerini söyle..."
+                            value={emailRequest}
+                            onChange={(e) => setEmailRequest(e.target.value)}
+                          />
+                          <button
+                            type="button"
+                            onClick={handleGenerateEmail}
+                            disabled={isGeneratingEmail || !emailRequest.trim()}
+                            className="w-full mt-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 py-3 text-base font-semibold rounded-lg shadow-lg disabled:cursor-not-allowed transition-all"
+                          >
+                            {isGeneratingEmail ? (
+                              <div className="flex items-center gap-2 justify-center">
+                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                <span>AI is writing...</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2 justify-center">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                <span>Generate Professional Email</span>
+                              </div>
+                            )}
+                          </button>
+                        </div>
+
+                        {/* Right: Email Content (AI Generated or Manual) */}
+                        <div className="bg-white rounded-lg p-4 border-2 border-green-100">
+                          <label className="form-label text-sm font-semibold text-green-900 mb-2">
+                            Email Content (AI Generated or Write Manually)
+                          </label>
+
+                          <div className="space-y-3">
+                            <div>
+                              <p className="text-xs font-semibold text-slate-600 mb-1">Subject:</p>
+                              <textarea
+                                className="w-full bg-slate-50 rounded p-2 text-sm text-slate-800 border border-slate-200 focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none"
+                                rows={2}
+                                value={generatedEmail.subject}
+                                onChange={(e) => setGeneratedEmail(prev => ({ ...prev, subject: e.target.value }))}
+                                placeholder="Write subject here or use AI to generate..."
+                              />
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-slate-600 mb-1">Body:</p>
+                              <textarea
+                                className="w-full bg-slate-50 rounded p-3 text-sm text-slate-800 border border-slate-200 focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none"
+                                rows={12}
+                                value={generatedEmail.body}
+                                onChange={(e) => setGeneratedEmail(prev => ({ ...prev, body: e.target.value }))}
+                                placeholder="Write email body here or use AI to generate..."
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
+
                 </div>
               </div>
             </div>
-          </div>
-        )}
+        </div>
 
-        {/* STEP 2: Search & Results */}
-        {currentStep === 2 && (
-          <div>
-            {/* Previous Button */}
-            <div className="mb-4">
-              <Button
-                onClick={handlePreviousStep}
-                variant="outline"
-                className="btn-secondary"
-              >
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  <span>Back to Email Setup</span>
-                </div>
-              </Button>
-            </div>
-
+        {/* Search Section - Always visible */}
+        <div className="mb-8">
             {/* Daily Email Limits Display */}
             {emailLimits && (
               <div className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
@@ -1101,27 +1319,43 @@ export default function LeadGenerationAppPage() {
               </div>
               <div className="card-body">
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* Unified Search Form */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="form-label">{t.businessType}</label>
-                      <Input
-                        placeholder={t.businessTypePlaceholder}
-                        className="form-input"
-                        {...register("query")}
+                      <label className="form-label">👤 Who are you?</label>
+                      <textarea
+                        className="form-input resize-none"
+                        rows={3}
+                        placeholder="e.g., I'm a freelance web developer with 5 years of experience..."
+                        value={userProfile}
+                        onChange={(e) => setUserProfile(e.target.value)}
                       />
-                      {errors.query && <p className="text-red-500 text-sm mt-2 font-medium">{errors.query.message?.toString()}</p>}
                     </div>
                     <div>
-                      <label className="form-label">{t.location}</label>
+                      <label className="form-label">🎯 What are you looking for?</label>
+                      <textarea
+                        className="form-input resize-none"
+                        rows={3}
+                        placeholder="e.g., Small businesses in London that need a new website..."
+                        value={userGoal}
+                        onChange={(e) => setUserGoal(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="form-label">📍 {t.location}</label>
                       <Input
-                        placeholder={t.locationPlaceholder}
-                        className="form-input"
+                        type="text"
+                        placeholder="e.g., London, Istanbul, New York, or leave empty for worldwide"
+                        className="form-input w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
                         {...register("location")}
                       />
                       {errors.location && <p className="text-red-500 text-sm mt-2 font-medium">{errors.location.message?.toString()}</p>}
                     </div>
                     <div>
-                      <label className="form-label">{t.maxResults}</label>
+                      <label className="form-label">🔢 {t.maxResults}</label>
                       <Input
                         type="number"
                         placeholder="20"
@@ -1132,19 +1366,25 @@ export default function LeadGenerationAppPage() {
                       {errors.maxResults && <p className="text-red-500 text-sm mt-2 font-medium">{errors.maxResults.message?.toString()}</p>}
                     </div>
                   </div>
+
                   <div className="flex justify-center">
-                    <Button type="submit" disabled={isLoading} className="btn-primary text-lg px-8 py-4">
+                    <Button
+                      type="button"
+                      onClick={handleAISmartSearch}
+                      disabled={isLoading || !userProfile.trim() || !userGoal.trim()}
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-lg px-10 py-4 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
                       {isLoading ? (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>{t.searching}</span>
+                          <span>AI is searching...</span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        <div className="flex items-center gap-3">
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                           </svg>
-                          <span>{t.startSearch}</span>
+                          <span>🚀 AI Smart Search</span>
                         </div>
                       )}
                     </Button>
@@ -1168,11 +1408,10 @@ export default function LeadGenerationAppPage() {
                 </form>
               </div>
             </div>
-          </div>
-        )}
+        </div>
 
-        {/* Results Section - Only show in Step 2 */}
-        {currentStep === 2 && leads.length > 0 && (
+        {/* Results Section - Always visible when there are leads */}
+        {leads.length > 0 && (
           <div className="space-y-6">
             <LeadFilters
               onFiltersChange={setFilters}
@@ -1197,19 +1436,13 @@ export default function LeadGenerationAppPage() {
                     </div>
                   </div>
                   <div className="flex gap-3 items-center">
-                    <Button
-                      onClick={() => setShowEmailCampaign(!showEmailCampaign)}
-                      variant="outline"
-                      className="btn-secondary"
-                    >
-                      {showEmailCampaign ? t.hideCampaign : t.emailCampaign}
-                    </Button>
                     {isSending ? (
                       <>
                         <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
                           <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                           <span className="text-sm font-semibold text-blue-800">
-                            Sending: {sendingProgress.sent} / {sendingProgress.total}
+                            Sent: {sendingProgress.sent} / {sendingProgress.total}
+                            {sendingProgress.skipped > 0 && ` (Skipped: ${sendingProgress.skipped} already sent)`}
                           </span>
                         </div>
                         <Button
@@ -1227,14 +1460,14 @@ export default function LeadGenerationAppPage() {
                     ) : (
                       <Button
                         onClick={sendEmails}
-                        disabled={selectedLeads.length === 0}
+                        disabled={filteredLeads.filter(l => l.email).length === 0}
                         className="btn-success"
                       >
                         <div className="flex items-center gap-2">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                           </svg>
-                          <span>{t.sendEmail} ({selectedLeads.length})</span>
+                          <span>Send Emails to All ({filteredLeads.filter(l => l.email).length})</span>
                         </div>
                       </Button>
                     )}
@@ -1246,20 +1479,6 @@ export default function LeadGenerationAppPage() {
                   <Table>
                     <TableHeader>
                       <TableRow className="border-slate-200">
-                        <TableHead className="w-12 bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700 font-semibold">
-                          <div className="flex flex-col items-center gap-1">
-                            <span className="text-xs">{t.select}</span>
-                            {selectedLeads.length > 0 && (
-                              <button
-                                onClick={handleSelectAll}
-                                className="px-2 py-0.5 text-[10px] font-semibold bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors whitespace-nowrap"
-                                title={selectedLeads.length === filteredLeads.length ? "Deselect All" : "Select All"}
-                              >
-                                {selectedLeads.length === filteredLeads.length ? "None" : "All"}
-                              </button>
-                            )}
-                          </div>
-                        </TableHead>
                         <TableHead className="min-w-[200px] bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700 font-semibold">{t.name}</TableHead>
                         <TableHead className="min-w-[180px] bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700 font-semibold">{t.email}</TableHead>
                         <TableHead className="min-w-[120px] bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700 font-semibold">{t.phone}</TableHead>
@@ -1273,14 +1492,6 @@ export default function LeadGenerationAppPage() {
                     <TableBody>
                       {filteredLeads.map((lead) => (
                         <TableRow key={lead.id} className="border-slate-200 hover:bg-slate-50 transition-colors">
-                          <TableCell className="border-slate-200">
-                            <input
-                              type="checkbox"
-                              checked={selectedLeads.includes(lead.id)}
-                              onChange={() => handleSelectLead(lead.id)}
-                              className="h-4 w-4 text-blue-600 bg-white border-slate-300 rounded focus:ring-blue-500 focus:ring-2"
-                            />
-                          </TableCell>
                           <TableCell className="font-semibold text-slate-800 border-slate-200">{lead.name}</TableCell>
                           <TableCell className="border-slate-200">
                             {lead.email ? (

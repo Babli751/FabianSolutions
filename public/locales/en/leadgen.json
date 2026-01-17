@@ -1,0 +1,65 @@
+{
+  "LeadGenPageContent": {
+    "heroSection": {
+      "title": "Smart Lead Generation & Email Automation",
+      "description": "Find businesses, generate professional emails with AI, and send campaigns automatically",
+      "emailConfiguration": "Email Configuration",
+      "contactManagement": "Contact Management & Campaign Automation"
+    },
+    "emailConfig": {
+      "title": "Email Configuration",
+      "subtitle": "Setup your email campaign",
+      "antiBanTitle": "Anti-Ban Protection",
+      "antiBanDescription": "Email providers limit daily sends and you may get banned. We use multiple strategies:",
+      "antiBanStrategy1": "Multiple accounts to distribute emails",
+      "antiBanStrategy2": "Random delays (0.5-5 seconds) between emails",
+      "antiBanStrategy3": "SMTP protocol - we won't log into your accounts",
+      "addedAccounts": "Added Email Accounts",
+      "gmailOAuth": "Gmail Account (OAuth2 - Recommended)",
+      "smtpConfig": "Or use SMTP Configuration:",
+      "emailAddress": "Email Address",
+      "appPassword": "App Password",
+      "smtpServer": "SMTP Server",
+      "smtpPort": "SMTP Port",
+      "addEmailAccount": "Add Email Account"
+    },
+    "templates": {
+      "title": "Email Templates",
+      "partnership": "Partnership",
+      "partnershipDesc": "Business collaboration",
+      "service": "Service Offer",
+      "serviceDesc": "Offer your services",
+      "introduction": "Introduction",
+      "introductionDesc": "Quick intro",
+      "custom": "Custom",
+      "customDesc": "Write your own"
+    },
+    "search": {
+      "title": "Search for Businesses",
+      "subtitle": "Find and connect with potential leads",
+      "location": "Location (City/Country)",
+      "locationPlaceholder": "e.g., Istanbul, Turkey",
+      "category": "Business Category",
+      "categoryPlaceholder": "e.g., Restaurant, Hotel, Software Company",
+      "searchQuery": "Search Query (Optional)",
+      "searchQueryPlaceholder": "Additional search terms...",
+      "searchButton": "Search Businesses",
+      "searching": "Searching"
+    },
+    "results": {
+      "foundLeads": "Found Leads",
+      "selectLeads": "Select leads to send emails",
+      "hideCampaign": "Hide Campaign",
+      "emailCampaign": "Email Campaign",
+      "sendingEmails": "Sending Emails",
+      "sendEmails": "Send Emails to Selected"
+    },
+    "filters": {
+      "filterLeads": "Filter Leads",
+      "hasEmail": "Has Email",
+      "hasPhone": "Has Phone",
+      "verified": "Verified",
+      "rating": "Min Rating"
+    }
+  }
+}

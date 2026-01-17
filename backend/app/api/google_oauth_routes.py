@@ -13,7 +13,9 @@ from dotenv import load_dotenv
 
 from app.database import get_db
 from app.models import User, Session as UserSession
+from app.models.campaign import EmailSent
 from app.auth import hash_password, generate_session_token, get_session_expiry
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
@@ -175,15 +177,27 @@ class GmailSendRequest(BaseModel):
     from_email: str  # Which connected Gmail account to send from
 
 @router.post("/oauth/send-email")
-async def send_email_via_oauth(request: GmailSendRequest):
+async def send_email_via_oauth(request: GmailSendRequest, db: Session = Depends(get_db)):
     """
     Send email using Gmail API with OAuth credentials
     """
+    # Check if already sent to this email (duplicate prevention)
+    existing = db.query(EmailSent).filter(EmailSent.recipient_email == request.to_email).first()
+    if existing:
+        return {
+            "success": True,
+            "skipped": True,
+            "message": f"Email to {request.to_email} already sent before. Skipping."
+        }
+
     if request.from_email not in user_credentials:
         raise HTTPException(
             status_code=401,
             detail=f"Gmail account {request.from_email} is not connected. Please authorize first."
         )
+
+    email_success = False
+    error_message = None
 
     try:
         creds_data = user_credentials[request.from_email]
@@ -215,6 +229,28 @@ async def send_email_via_oauth(request: GmailSendRequest):
         if credentials.token != creds_data['token']:
             user_credentials[request.from_email]['token'] = credentials.token
 
+        email_success = True
+
+        # Save to database immediately after successful send
+        try:
+            email_sent = EmailSent(
+                campaign_id=None,
+                lead_id=None,
+                recipient_email=request.to_email,
+                recipient_name=None,
+                subject=request.subject,
+                body=request.body,
+                status="sent",
+                sent_at=datetime.utcnow(),
+                error_message=None
+            )
+            db.add(email_sent)
+            db.commit()
+            print(f"✓ OAuth email saved to database: {request.to_email} - Status: sent")
+        except Exception as db_error:
+            print(f"✗ Database save failed for OAuth email {request.to_email}: {str(db_error)}")
+            db.rollback()
+
         return {
             "success": True,
             "message_id": send_message['id'],
@@ -222,4 +258,26 @@ async def send_email_via_oauth(request: GmailSendRequest):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
+        error_message = str(e)
+
+        # Save failed email to database
+        try:
+            email_sent = EmailSent(
+                campaign_id=None,
+                lead_id=None,
+                recipient_email=request.to_email,
+                recipient_name=None,
+                subject=request.subject,
+                body=request.body,
+                status="failed",
+                sent_at=None,
+                error_message=error_message
+            )
+            db.add(email_sent)
+            db.commit()
+            print(f"✓ OAuth failed email saved to database: {request.to_email} - Status: failed")
+        except Exception as db_error:
+            print(f"✗ Database save failed for OAuth email {request.to_email}: {str(db_error)}")
+            db.rollback()
+
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {error_message}")

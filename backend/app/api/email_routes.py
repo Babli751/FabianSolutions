@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 from datetime import datetime
@@ -8,6 +8,9 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import random
 import httpx
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.models.campaign import EmailSent
 
 router = APIRouter()
 
@@ -23,14 +26,15 @@ DAILY_EMAIL_LIMIT = 40  # Max emails per account per day
 class EmailAccount(BaseModel):
     email: EmailStr
     password: str
+    name: Optional[str] = None  # Sender name (optional)
 
 class SendEmailsRequest(BaseModel):
-    lead_ids: List[int]
+    lead_ids: List[str]  # Changed to List[str] as frontend sends email addresses
     subject: str
     body: str
     email_accounts: List[EmailAccount]
-    delay_min: float = 120.0  # 2 minutes minimum
-    delay_max: float = 180.0  # 3 minutes maximum
+    delay_min: float = 0.5  # 0.5 seconds minimum
+    delay_max: float = 5.0  # 5 seconds maximum
 
 class EmailProgress(BaseModel):
     total: int
@@ -38,12 +42,22 @@ class EmailProgress(BaseModel):
     failed: int
     status: str  # "sending", "completed", "stopped"
 
-# SMTP Configuration
+# SMTP Configuration - 14 providers
 SMTP_CONFIG = {
     "gmail.com": {"host": "smtp.gmail.com", "port": 587},
     "outlook.com": {"host": "smtp-mail.outlook.com", "port": 587},
     "hotmail.com": {"host": "smtp-mail.outlook.com", "port": 587},
+    "live.com": {"host": "smtp-mail.outlook.com", "port": 587},
     "yahoo.com": {"host": "smtp.mail.yahoo.com", "port": 587},
+    "icloud.com": {"host": "smtp.mail.me.com", "port": 587},
+    "aol.com": {"host": "smtp.aol.com", "port": 587},
+    "zoho.com": {"host": "smtp.zoho.com", "port": 587},
+    "protonmail.com": {"host": "smtp.protonmail.com", "port": 587},
+    "gmx.com": {"host": "smtp.gmx.com", "port": 587},
+    "mail.com": {"host": "smtp.mail.com", "port": 587},
+    "yandex.com": {"host": "smtp.yandex.com", "port": 587},
+    "fastmail.com": {"host": "smtp.fastmail.com", "port": 587},
+    "mail.ru": {"host": "smtp.mail.ru", "port": 587},
 }
 
 def get_smtp_config(email: str):
@@ -78,7 +92,8 @@ async def send_single_email(
     from_email: str,
     password: str,
     subject: str,
-    body: str
+    body: str,
+    sender_name: Optional[str] = None
 ) -> dict:
     """Send a single email via SMTP"""
     try:
@@ -86,10 +101,19 @@ async def send_single_email(
 
         # Create message
         message = MIMEMultipart()
-        message['From'] = from_email
+
+        # Add sender name if provided
+        if sender_name:
+            message['From'] = f"{sender_name} <{from_email}>"
+            # Add sender name at the end of email body
+            body_with_signature = f"{body}\n\n---\nBest regards,\n{sender_name}\n{from_email}"
+        else:
+            message['From'] = from_email
+            body_with_signature = body
+
         message['To'] = to_email
         message['Subject'] = subject
-        message.attach(MIMEText(body, 'plain'))
+        message.attach(MIMEText(body_with_signature, 'plain'))
 
         # Send email with timeout
         with smtplib.SMTP(smtp_config['host'], smtp_config['port'], timeout=30) as server:
@@ -108,6 +132,9 @@ async def send_single_email(
         return {"success": False, "email": to_email, "error": error_msg}
     except smtplib.SMTPException as e:
         error_msg = f"SMTP Error: {str(e)}"
+        return {"success": False, "email": to_email, "error": error_msg}
+    except TimeoutError as e:
+        error_msg = f"Connection timeout: {str(e)}"
         return {"success": False, "email": to_email, "error": error_msg}
     except Exception as e:
         error_msg = f"Failed to send email: {str(e)}"
@@ -225,6 +252,109 @@ async def send_emails_background(
     # Mark as completed
     email_progress[request_id]["status"] = "completed"
 
+async def send_emails_background_smtp(
+    request_id: str,
+    lead_emails: List[str],
+    subject: str,
+    body: str,
+    email_accounts: List[EmailAccount],
+    delay_min: float,
+    delay_max: float
+):
+    """Background task to send emails to all leads via SMTP"""
+    from app.database import SessionLocal
+    db = SessionLocal()
+
+    try:
+        account_index = 0
+        skipped = 0
+
+        for to_email in lead_emails:
+            # Check if stopped
+            if email_progress[request_id]["status"] == "stopped":
+                break
+
+            # Check if already sent to this email (duplicate check)
+            existing = db.query(EmailSent).filter(EmailSent.recipient_email == to_email).first()
+            if existing:
+                skipped += 1
+                email_progress[request_id]["skipped"] = skipped
+                continue
+
+            # Get current account
+            account = email_accounts[account_index % len(email_accounts)]
+
+            # Check daily limit
+            if get_remaining_daily_emails(account.email) <= 0:
+                # Try next account
+                account_index += 1
+                if account_index >= len(email_accounts):
+                    # All accounts exhausted for today
+                    email_progress[request_id]["status"] = "completed"
+                    email_progress[request_id]["errors"].append("Daily limit reached for all accounts")
+                    break
+                account = email_accounts[account_index % len(email_accounts)]
+                if get_remaining_daily_emails(account.email) <= 0:
+                    continue
+
+            # Send email
+            result = await send_single_email(
+                to_email=to_email,
+                from_email=account.email,
+                password=account.password,
+                subject=subject,
+                body=body,
+                sender_name=account.name
+            )
+
+            # Save to database immediately after sending
+            try:
+                email_sent = EmailSent(
+                    campaign_id=None,  # No campaign for direct sends
+                    lead_id=None,
+                    recipient_email=to_email,
+                    recipient_name=None,
+                    subject=subject,
+                    body=body,
+                    status="sent" if result["success"] else "failed",
+                    sent_at=datetime.utcnow() if result["success"] else None,
+                    error_message=result.get("error") if not result["success"] else None
+                )
+                db.add(email_sent)
+                db.commit()  # Commit immediately - this also flushes
+                print(f"✓ Database commit successful: {to_email} - Status: {'sent' if result['success'] else 'failed'}")
+            except Exception as e:
+                print(f"✗ Database commit failed for {to_email}: {str(e)}")
+                db.rollback()
+                import traceback
+                traceback.print_exc()
+
+            if result["success"]:
+                email_progress[request_id]["sent"] += 1
+            else:
+                email_progress[request_id]["failed"] += 1
+                error_msg = result.get('error', 'Unknown error')
+                email_progress[request_id]["errors"].append(f"Failed to send to {to_email}: {error_msg}")
+
+            # Random delay between emails (anti-ban)
+            delay = random.uniform(delay_min, delay_max)
+            await asyncio.sleep(delay)
+
+            # Rotate to next account
+            account_index += 1
+
+        # Mark as completed (only if not already stopped)
+        if email_progress[request_id]["status"] != "stopped":
+            email_progress[request_id]["status"] = "completed"
+
+        print(f"Email sending finished for request {request_id}. Status: {email_progress[request_id]['status']}")
+    finally:
+        try:
+            db.close()
+            print(f"✓ Database session closed cleanly for request {request_id}")
+        except Exception as e:
+            print(f"✗ Error closing database session: {str(e)}")
+
 @router.post("/send-emails")
 async def send_emails(
     request: SendEmailsRequest,
@@ -236,17 +366,39 @@ async def send_emails(
     # Generate request ID
     request_id = f"email_{datetime.utcnow().timestamp()}"
 
-    # TODO: Fetch real leads from database
-    # For now, require leads to be passed with email addresses
     if not request.lead_ids:
         raise HTTPException(status_code=400, detail="No lead IDs provided")
 
-    # In production, fetch from database
-    # For now, return error asking to implement database
-    raise HTTPException(
-        status_code=501,
-        detail="Database integration required. Please configure database connection and lead storage."
+    if not request.email_accounts:
+        raise HTTPException(status_code=400, detail="No email accounts configured")
+
+    # Initialize progress tracking
+    email_progress[request_id] = {
+        "total": len(request.lead_ids),
+        "sent": 0,
+        "failed": 0,
+        "skipped": 0,
+        "status": "sending",
+        "errors": []
+    }
+
+    # Start background task to send emails
+    background_tasks.add_task(
+        send_emails_background_smtp,
+        request_id,
+        request.lead_ids,
+        request.subject,
+        request.body,
+        request.email_accounts,
+        request.delay_min,
+        request.delay_max
     )
+
+    return {
+        "success": True,
+        "request_id": request_id,
+        "message": f"Started sending {len(request.lead_ids)} emails"
+    }
 
 @router.get("/email-progress/{request_id}")
 async def get_email_progress(request_id: str):
@@ -321,7 +473,7 @@ async def get_search_progress(search_id: str):
 
 class SearchRequest(BaseModel):
     query: str  # Business type/query
-    location: str
+    location: Optional[str] = None  # Optional - if not provided, searches worldwide
     maxResults: int = 20  # Default, but no upper limit
     search_id: Optional[str] = None  # Optional client-provided search ID
 
@@ -990,3 +1142,172 @@ async def get_email_limits(request: EmailLimitRequest):
         "total_sent_today": sum(limit["sent_today"] for limit in limits),
         "total_remaining": total_remaining
     }
+
+class AISmartSearchRequest(BaseModel):
+    user_profile: str
+    user_goal: str
+
+@router.post("/ai-smart-search")
+async def ai_smart_search(request: AISmartSearchRequest):
+    """
+    Use AI to generate smart search parameters based on user profile and goals
+    """
+    try:
+        import os
+        from openai import OpenAI
+
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise HTTPException(
+                status_code=500,
+                detail="OpenAI API key not configured"
+            )
+
+        client = OpenAI(api_key=api_key)
+
+        system_prompt = """You are an AI assistant helping users find the right business leads. Based on the user's profile and what they're looking for, suggest the best business type to search for.
+
+🌍 IMPORTANT: User will select location from dropdown, so you DON'T need to suggest location. Just focus on the business type.
+
+Respond ONLY in this EXACT JSON format (no other text):
+{
+  "business_type": "specific business type to search for"
+}
+
+Examples:
+User: "I'm a web developer" + "I want to find restaurants"
+Response: {"business_type": "restaurants"}
+
+User: "I'm a marketing consultant" + "I want to find small businesses"
+Response: {"business_type": "small businesses"}
+
+User: "Ben bir grafik tasarımcıyım" + "Kafe ve restoranlar için poster tasarlıyorum"
+Response: {"business_type": "cafes and restaurants"}"""
+
+        user_prompt = f"User Profile: {request.user_profile}\n\nWhat they're looking for: {request.user_goal}\n\nGenerate the best search parameters:"
+
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.7,
+            max_tokens=200
+        )
+
+        result_text = response.choices[0].message.content.strip()
+
+        # Parse JSON response
+        import json
+        try:
+            result = json.loads(result_text)
+        except:
+            # Fallback if JSON parsing fails
+            result = {
+                "business_type": "businesses"
+            }
+
+        return {
+            "success": True,
+            "business_type": result.get("business_type", "businesses")
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"AI Smart Search failed: {str(e)}"
+        )
+
+class AIGenerateEmailRequest(BaseModel):
+    request: str  # User's description of what email they want
+    user_profile: Optional[str] = None  # Optional user profile for context
+    sender_name: Optional[str] = None  # Sender's name to use in email
+
+@router.post("/ai-generate-email")
+async def ai_generate_email(request: AIGenerateEmailRequest):
+    """
+    Generate a professional email based on user's request
+    """
+    try:
+        import os
+        from openai import OpenAI
+
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise HTTPException(
+                status_code=500,
+                detail="OpenAI API key not configured"
+            )
+
+        client = OpenAI(api_key=api_key)
+
+        # Build sender name context
+        sender_context = ""
+        if request.sender_name:
+            sender_context = f"\n\n🎯 IMPORTANT: The sender's name is '{request.sender_name}'. Use this actual name in the email instead of placeholders like [Your Name]. Write 'My name is {request.sender_name}' if introducing yourself."
+
+        system_prompt = f"""You are a professional email writing assistant. Based on the user's request, generate a professional, persuasive business email.
+
+🌍 IMPORTANT: Generate the email in the SAME LANGUAGE as the user's request.
+- If the user writes in Turkish, generate the email in Turkish
+- If the user writes in English, generate the email in English
+- If the user writes in any other language, generate the email in that language
+- Match the language of the user's request exactly
+
+The email should be:
+- Professional and well-structured
+- Persuasive but not pushy
+- Include a clear call-to-action
+- Appropriate length (not too long)
+- Perfect grammar and vocabulary in the target language
+- Use the REAL sender name (not placeholders like [Your Name] or [Sender Name]){sender_context}
+
+You MUST respond in this EXACT format:
+SUBJECT: [email subject in the same language as user's request]
+BODY: [email body in the same language as user's request]
+
+Do not add any explanations or meta-commentary."""
+
+        user_prompt = f"Generate a professional email based on this request:\n\n{request.request}"
+
+        if request.user_profile:
+            user_prompt += f"\n\nUser Profile (for context): {request.user_profile}"
+
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.7,
+            max_tokens=1000
+        )
+
+        generated_content = response.choices[0].message.content.strip()
+
+        # Parse the response
+        subject = ""
+        body = ""
+
+        if "SUBJECT:" in generated_content and "BODY:" in generated_content:
+            parts = generated_content.split("BODY:")
+            subject = parts[0].replace("SUBJECT:", "").strip()
+            body = parts[1].strip()
+        else:
+            # Fallback if format is wrong
+            lines = generated_content.split('\n')
+            subject = lines[0] if lines else "Business Proposal"
+            body = '\n'.join(lines[1:]) if len(lines) > 1 else generated_content
+
+        return {
+            "success": True,
+            "subject": subject,
+            "body": body
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"AI Email Generation failed: {str(e)}"
+        )
