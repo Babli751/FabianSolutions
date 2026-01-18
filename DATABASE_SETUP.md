@@ -1,6 +1,6 @@
 # Database Setup Complete
 
-## What Was Added
+## What Was Added.
 
 ### 1. SQLite Database
 - **File**: `leadgen.db` (created automatically on first run)
